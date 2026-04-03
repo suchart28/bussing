@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bus Alert - ระบบแจ้งเตือนประจำป้าย</title>
+    <title>Bus Alert - ระบบแจ้งเตือน 3 ภาษา</title>
     <style>
-        /* CSS คงเดิมตาม Dark Mode UX ที่ออกแบบไว้ */
+        /* CSS คงเดิม */
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -21,7 +21,6 @@
         header { text-align: center; margin-bottom: 20px; }
         .logo { width: 85%; max-width: 320px; height: auto; margin: 0 auto 15px auto; display: block; }
         
-        /* เน้นป้ายรถเมล์ให้เด่นขึ้น */
         .stop-status { font-size: 16px; color: #00e676; margin-top: 5px; font-weight: bold; background: #111; padding: 10px; border-radius: 10px; display: inline-block;}
 
         .main-display { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
@@ -58,13 +57,12 @@
         <header>
             <img src="bussing.png" alt="BUSSING TRANSIT" class="logo" onerror="this.style.display='none'; document.getElementById('alt-logo').style.display='block';">
             <h1 id="alt-logo" style="display:none; font-size: 30px; color: #ff007f;">BUSSING<span style="color:#00e676">TRANSIT</span></h1>
-            
             <div class="stop-status" id="stop-name">📍 รอตรวจจับพิกัดป้าย...</div>
         </header>
 
         <div id="view-start">
             <p class="instruction-text">
-                ระบบแจ้งเตือนรถเข้าป้ายอัตโนมัติ<br>
+                ระบบแจ้งเตือนรถเข้าป้าย (3 ภาษา)<br>
                 กรุณากดปุ่มเพื่อเปิดใช้งานระบบเสียงลำโพง
             </p>
         </div>
@@ -88,19 +86,16 @@
         </div>
 
         <footer>
-            <button id="start-btn" class="btn-huge" onclick="initApp()">🔊 เริ่มระบบแจ้งเตือนประจำป้าย</button>
+            <button id="start-btn" class="btn-huge" onclick="initApp()">🔊 เริ่มระบบแจ้งเตือน 3 ภาษา</button>
         </footer>
     </div>
 
     <div id="log">ระบบพร้อมทำงาน...</div>
 
     <script>
-        // ==========================================
-        // 🎯 ตั้งค่าพิกัดป้ายรถเมล์ที่นี่ (Hardcoded)
-        // ==========================================
         const TARGET_STOP_NAME = "ป้ายหน้าเซ็นทรัล ขอนแก่น";
-        const TARGET_STOP_LAT = 16.431924;  // ละติจูดของป้าย
-        const TARGET_STOP_LNG = 102.825739; // ลองจิจูดของป้าย
+        const TARGET_STOP_LAT = 16.432924;  
+        const TARGET_STOP_LNG = 102.823528; 
 
         let lastSpokenEta = null;
         let isFirstCalculation = true;
@@ -121,16 +116,13 @@
             document.getElementById('view-start').style.display = 'none';
             document.getElementById('view-tracking').style.display = 'flex';
             
-            // อัปเดตชื่อป้ายบนหน้าจอทันที
             document.getElementById('stop-name').innerText = `📍 ประจำการที่: ${TARGET_STOP_NAME}`;
             
-            // เปิดใช้งาน Audio Context
             let testSpeech = new SpeechSynthesisUtterance('');
             window.speechSynthesis.speak(testSpeech);
 
-            log(`เริ่มติดตามรถเข้าป้าย: ${TARGET_STOP_NAME}`);
+            log(`เริ่มติดตามรถเข้าป้าย (รองรับเสียง 3 ภาษา)`);
             
-            // ไม่ต้องรอ GPS มือถือแล้ว เริ่มดึงข้อมูลรถได้เลย
             fetchAndCheckBus();
             setInterval(fetchAndCheckBus, CHECK_INTERVAL);
         }
@@ -145,12 +137,9 @@
                     let closestBus = null;
                     let minDistance = Infinity;
 
-                    // เทียบระยะทางระหว่าง "รถทุกคัน" กับ "ป้ายรถเมล์"
                     buses.forEach(bus => {
                         const busLat = parseFloat(bus.gps_lat);
                         const busLng = parseFloat(bus.gps_long);
-                        
-                        // ใช้ TARGET_STOP_LAT, TARGET_STOP_LNG แทนพิกัดผู้ใช้
                         const distance = calculateDistance(TARGET_STOP_LAT, TARGET_STOP_LNG, busLat, busLng);
 
                         if (distance < minDistance) {
@@ -169,16 +158,27 @@
                     
                     log(`พบรถห่างป้าย ${minDistance.toFixed(2)} กม. เวลา ${etaMinutes} นาที`);
 
-                    // --- ระบบอ่านออกเสียงประจำป้าย ---
-                    const routeText = closestBus.gps_route_name.split(':')[0]; 
+                    // --- การสร้างข้อความ 3 ภาษา ---
                     const speechLevels = [10, 5, 2, 1];
                     
                     if (isFirstCalculation || (speechLevels.includes(etaMinutes) && etaMinutes !== lastSpokenEta)) {
                         
-                        // เปลี่ยนประโยคพูดให้เข้ากับการรอที่ป้าย
-                        let speakText = `รถเมล์สาย${routeText} จะเข้า${TARGET_STOP_NAME} ในอีกประมาณ ${etaMinutes} นาที ระยะทาง ${minDistance.toFixed(1)} กิโลเมตรค่ะ`;
+                        const routeTextTH = closestBus.gps_route_name.split(':')[0]; 
+                        const carId = closestBus.gps_car_id;
+                        const distText = minDistance.toFixed(1);
+
+                        // 1. ประโยคภาษาไทย
+                        let textTH = `ประกาศ รถเมล์สาย${routeTextTH} จะเข้า${TARGET_STOP_NAME} ในอีกประมาณ ${etaMinutes} นาที ระยะทาง ${distText} กิโลเมตรค่ะ`;
                         
-                        speakAlert(speakText);
+                        // 2. ประโยคภาษาอังกฤษ (ใช้เบอร์รถ เพื่อให้อ่านง่าย)
+                        let textEN = `Attention please. Bus number ${carId} will arrive in approximately ${etaMinutes} minutes. Distance is ${distText} kilometers.`;
+                        
+                        // 3. ประโยคภาษาจีน
+                        let textCN = `请注意，${carId} 号公交车将在大约 ${etaMinutes} 分钟后到达。 距离 ${distText} 公里。`;
+                        
+                        // ส่งไปให้ฟังก์ชันพูดเรียงคิว
+                        speakAlertMultiLang(textTH, textEN, textCN);
+                        
                         lastSpokenEta = etaMinutes;
                         isFirstCalculation = false; 
                     }
@@ -208,14 +208,30 @@
             return R * c;
         }
 
-        function speakAlert(text) {
+        // --- ฟังก์ชันใหม่: พูด 3 ภาษาเรียงลำดับ ---
+        function speakAlertMultiLang(thText, enText, cnText) {
             if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); 
-                const msg = new SpeechSynthesisUtterance(text);
-                msg.lang = 'th-TH'; 
-                msg.rate = 0.9;     
-                window.speechSynthesis.speak(msg);
-                log("🔊 พูด: " + text);
+                window.speechSynthesis.cancel(); // ล้างคิวเก่าทิ้งทั้งหมดก่อนเริ่มประกาศใหม่
+
+                // 1. คิวภาษาไทย
+                let msgTH = new SpeechSynthesisUtterance(thText);
+                msgTH.lang = 'th-TH'; 
+                msgTH.rate = 0.9;     
+                window.speechSynthesis.speak(msgTH);
+
+                // 2. คิวภาษาอังกฤษ
+                let msgEN = new SpeechSynthesisUtterance(enText);
+                msgEN.lang = 'en-US'; 
+                msgEN.rate = 0.9;     
+                window.speechSynthesis.speak(msgEN);
+
+                // 3. คิวภาษาจีน
+                let msgCN = new SpeechSynthesisUtterance(cnText);
+                msgCN.lang = 'zh-CN'; 
+                msgCN.rate = 0.9;     
+                window.speechSynthesis.speak(msgCN);
+
+                log("🔊 ประกาศ 3 ภาษา: TH, EN, CN");
             }
         }
     </script>
