@@ -3,42 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bus Alert Pro - ขอนแก่นซิตี้บัส</title>
+    <title>Bus Alert - ระบบแจ้งเตือน</title>
     <style>
-        /* Reset default browser styles */
+        /* Reset & Base Styles */
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
-        
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #000000; /* ดำสนิท */
+            background-color: #000000; /* Dark Mode แท้ */
             color: #FFFFFF;
             height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* ป้องกันการเลื่อนหน้าจอเกินจำเป็น */
+            overflow: hidden;
         }
 
-        /* Container หลัก จัดกลางแนวตั้ง */
         .app-container {
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: space-between; /* กระจายหัว-กลาง-ท้าย */
+            justify-content: space-between;
             padding: 30px 20px;
         }
 
-        /* ส่วนหัว: ชื่อแอปและสถานะ GPS */
+        /* ส่วนหัว: โลโก้ และ สถานะ GPS */
         header { text-align: center; margin-bottom: 20px; }
-        h1 { font-size: 24px; font-weight: 800; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+        .logo { width: 85%; max-width: 320px; height: auto; margin: 0 auto 15px auto; display: block; }
         .gps-status { font-size: 14px; color: #666; margin-top: 5px; }
-        .gps-active { color: #00e676; } /* เขียวเรืองแสงเมื่อได้พิกัด */
+        .gps-active { color: #00e676; font-weight: bold; }
 
-        /* ส่วนกลาง: แสดงผลข้อมูลหลัก (ใหญ่เต็มตา) */
+        /* ส่วนกลาง: หน้าจอหลัก */
         .main-display {
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: center; /* กลางจอแนวตั้ง */
+            justify-content: center;
             align-items: center;
             text-align: center;
         }
@@ -48,30 +46,30 @@
             background-color: #1a1a1a;
             width: 100%;
             border-radius: 20px;
-            padding: 20px;
+            padding: 15px;
             margin-bottom: 20px;
             border: 1px solid #333;
         }
         .route-name { font-size: 18px; color: #00e676; font-weight: bold; margin-bottom: 5px; }
         .car-id { font-size: 14px; color: #888; }
 
-        /* ตัวเลข ETA ยักษ์ */
-        .eta-container { margin: 30px 0; }
+        /* ตัวเลขเวลา (ETA) ใหญ่เต็มตา */
+        .eta-container { margin: 20px 0; }
         .eta-label { font-size: 20px; color: #ccc; margin-bottom: -10px; }
         .eta-value { 
-            font-size: 120px; /* ใหญ่ยักษ์ */
+            font-size: 130px; 
             font-weight: 900; 
             color: #FFFFFF; 
-            line-height: 1;
-            text-shadow: 0 0 20px rgba(255,255,255,0.3);
+            line-height: 1.1;
+            text-shadow: 0 0 20px rgba(255,255,255,0.2);
         }
-        .eta-unit { font-size: 24px; color: #ccc; margin-top: -10px; }
+        .eta-unit { font-size: 24px; color: #ccc; margin-top: -15px; }
 
         /* ระยะทาง */
-        .distance-display { font-size: 24px; color: #aaa; font-weight: 300; }
-        .distance-value { font-weight: bold; color: #eee; }
+        .distance-display { font-size: 22px; color: #aaa; font-weight: 300; background: #222; padding: 10px 20px; border-radius: 50px;}
+        .distance-value { font-weight: bold; color: #fff; }
 
-        /* หน้าจอรอเริ่มระบบ */
+        /* หน้าจอเริ่มต้น */
         #view-start {
             display: flex;
             flex-direction: column;
@@ -79,16 +77,12 @@
             align-items: center;
             height: 100%;
         }
-        .welcome-icon { font-size: 80px; margin-bottom: 30px; }
         .instruction-text { font-size: 18px; color: #aaa; text-align: center; margin-bottom: 40px; line-height: 1.6; }
 
-        /* หน้าจอทำงานหลัก (ซ่อนไว้ก่อน) */
         #view-tracking { display: none; height: 100%; }
 
-        /* ส่วนท้าย: ปุ่มกด */
+        /* ส่วนท้าย: ปุ่ม */
         footer { margin-top: 20px; }
-
-        /* ปุ่มขนาดใหญ่ */
         .btn-huge {
             background: linear-gradient(135deg, #00c853 0%, #00e676 100%);
             color: #000;
@@ -100,14 +94,13 @@
             border-radius: 50px;
             cursor: pointer;
             box-shadow: 0 10px 20px rgba(0,230,118,0.3);
-            transition: transform 0.1s;
         }
-        .btn-huge:active { transform: scale(0.97); box-shadow: 0 5px 10px rgba(0,230,118,0.2); }
+        .btn-huge:active { transform: scale(0.97); }
 
-        /* Log สำหรับ Debug (ซ่อนไว้ด้านล่างสุด ตัวเล็กๆ) */
+        /* Log สำหรับ Debug (ซ่อนไว้ด้านล่าง) */
         #log { 
-            font-size: 10px; color: #333; height: 40px; overflow-y: scroll; 
-            background: #050505; padding: 5px; border-top: 1px solid #111;
+            font-size: 11px; color: #666; height: 50px; overflow-y: scroll; 
+            background: #050505; padding: 5px 10px; border-top: 1px solid #111; text-align: left;
         }
     </style>
 </head>
@@ -116,102 +109,106 @@
     <div class="app-container">
         
         <header>
-            <h1>Bus Alert Pro</h1>
-            <div id="gps-stat" class="gps-status">⚪ รอพิกัด GPS</div>
+            <img src="bussing.png" alt="BUSSING TRANSIT" class="logo" onerror="this.style.display='none'; document.getElementById('alt-logo').style.display='block';">
+            <h1 id="alt-logo" style="display:none; font-size: 30px; color: #ff007f;">BUSSING<span style="color:#00e676">TRANSIT</span></h1>
+            
+            <div id="gps-stat" class="gps-status">⚪ รอพิกัด GPS...</div>
         </header>
 
         <div id="view-start">
-            <div class="welcome-icon">🚌🔊</div>
             <p class="instruction-text">
-                ยินดีต้อนรับสู่ระบบแจ้งเตือนรถเมล์ด้วยเสียง<br>
-                กรุณากดปุ่มด้านล่างเพื่ออนุญาตพิกัดและเสียงพูดค่ะ
+                ระบบแจ้งเตือนพิกัดรถเมล์ด้วยเสียง<br>
+                กรุณากดปุ่มด้านล่างเพื่ออนุญาต<br>พิกัด GPS และเสียงลำโพง
             </p>
         </div>
 
         <div id="view-tracking" class="main-display">
-            
             <div class="bus-info-card">
-                <div class="route-name">สาย 1: สนามบิน-บขส.3</div>
-                <div class="car-id" id="bus-car-id">รอข้อมูลรถ...</div>
+                <div class="route-name" id="bus-route-name">กำลังค้นหารถ...</div>
+                <div class="car-id" id="bus-car-id">--</div>
             </div>
 
             <div class="main-data">
                 <div class="eta-container">
-                    <div class="eta-label">จะถึงในอีก</div>
-                    <div class="eta-value" id="eta-mins">--</div>
+                    <div class="eta-label">จะถึงในอีกประมาณ</div>
+                    <div class="eta-value" id="eta-mins">-</div>
                     <div class="eta-unit">นาที</div>
                 </div>
                 
                 <div class="distance-display">
-                    ระยะห่าง <span class="distance-value" id="distance-km">--</span> กม.
+                    ระยะทาง <span class="distance-value" id="distance-km">-.-</span> กม.
                 </div>
             </div>
-            
         </div>
 
         <footer>
-            <button id="start-btn" class="btn-huge" onclick="initApp()">👉 เริ่มติดตามและแจ้งเตือน</button>
+            <button id="start-btn" class="btn-huge" onclick="initApp()">🔊 เริ่มติดตามและแจ้งเตือน</button>
         </footer>
-
     </div>
 
-    <div id="log"></div>
+    <div id="log">รอการเริ่มทำงาน...</div>
 
     <script>
-        // --- LOGIC (ยังคงเดิมแต่ปรับปรุงการ Update UI) ---
         let userLat, userLng;
         let lastSpokenEta = null;
+        let isFirstCalculation = true; // เอาไว้เช็คว่าคำนวณสำเร็จครั้งแรกหรือยัง
+
         const API_URL = 'https://public.bussing.app/gps-current/7';
         const PROXY_URL = 'https://corsproxy.io/?' + encodeURIComponent(API_URL);
-        const CHECK_INTERVAL = 15000; 
-        const AVERAGE_SPEED_KMH = 15; // ปรับลดความเร็วเฉลี่ยในเมืองหน่อยเพื่อความชัวร์ (15 กม/ชม)
+        const CHECK_INTERVAL = 15000; // อัปเดตทุก 15 วินาที
+        const AVERAGE_SPEED_KMH = 15; // ความเร็วรถวิ่งในเมือง (ปรับได้)
 
         function log(msg) {
             const logDiv = document.getElementById('log');
-            logDiv.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+            logDiv.innerHTML += `<div>> ${msg}</div>`;
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 
+        // --- 1. เริ่มต้นระบบ ---
         async function initApp() {
-            // สลับหน้าจอ UX
             document.getElementById('start-btn').style.display = 'none';
             document.getElementById('view-start').style.display = 'none';
             document.getElementById('view-tracking').style.display = 'flex';
             
-            log("เริ่มระบบ: กำลังขอพิกัด...");
+            // เปิดใช้งาน Speech Synthesis เพื่อให้เบราว์เซอร์ปลดล็อกเสียง
+            let testSpeech = new SpeechSynthesisUtterance('');
+            window.speechSynthesis.speak(testSpeech);
+
+            log("กำลังขออนุญาตเข้าถึงพิกัด GPS...");
             
             if (navigator.geolocation) {
                 navigator.geolocation.watchPosition(
                     (pos) => {
                         userLat = pos.coords.latitude;
                         userLng = pos.coords.longitude;
-                        // อัปเดตสถานะ GPS ที่ Header
                         const gpsStat = document.getElementById('gps-stat');
-                        gpsStat.innerText = `🟢 ได้รับพิกัดแล้ว (${userLat.toFixed(3)}, ${userLng.toFixed(3)})`;
+                        gpsStat.innerText = `🟢 รับพิกัดสำเร็จ (${userLat.toFixed(4)}, ${userLng.toFixed(4)})`;
                         gpsStat.classList.add('gps-active');
-                        log("อัปเดตพิกัดผู้ใช้");
                     },
                     (err) => {
-                        log("Error GPS: " + err.message);
-                        document.getElementById('gps-stat').innerText = "🔴 GPS ผิดพลาด";
+                        log("GPS Error: " + err.message);
+                        document.getElementById('gps-stat').innerText = "🔴 ไม่สามารถระบุตำแหน่งได้";
                         document.getElementById('gps-stat').classList.remove('gps-active');
                     },
                     { enableHighAccuracy: true }
                 );
                 
-                // เริ่มดึงข้อมูลทันที
+                // เรียกครั้งแรก และตั้งเวลารันซ้ำทุกๆ 15 วินาที
                 fetchAndCheckBus();
                 setInterval(fetchAndCheckBus, CHECK_INTERVAL);
             } else {
-                alert("มือถือของคุณไม่รองรับ GPS");
+                alert("อุปกรณ์ของคุณไม่รองรับ GPS");
             }
         }
 
+        // --- 2. ดึงข้อมูลรถและคำนวณ ---
         async function fetchAndCheckBus() {
-            if (!userLat || !userLng) return;
+            if (!userLat || !userLng) {
+                log("รอพิกัดผู้ใช้ก่อนดึงข้อมูลรถ...");
+                return;
+            }
 
             try {
-                log("ดึงข้อมูลรถเมล์...");
                 const response = await fetch(PROXY_URL);
                 const result = await response.json();
                 const buses = result.data;
@@ -220,7 +217,7 @@
                     let closestBus = null;
                     let minDistance = Infinity;
 
-                    // หาคันที่ใกล้ที่สุด (กรณีมีหลายคันในสายนั้น)
+                    // หาคันที่อยู่ใกล้ผู้ใช้มากที่สุด
                     buses.forEach(bus => {
                         const busLat = parseFloat(bus.gps_lat);
                         const busLng = parseFloat(bus.gps_long);
@@ -232,43 +229,54 @@
                         }
                     });
 
-                    // --- คำนวณ ETA ---
+                    // คำนวณ ETA
                     let etaMinutes = Math.round((minDistance / AVERAGE_SPEED_KMH) * 60);
-                    // ป้องกันค่าเป็น 0 ถ้าใกล้มาก ให้ติด 1 นาทีไว้ก่อน
-                    if (etaMinutes <= 0 && minDistance > 0.1) etaMinutes = 1;
+                    if (etaMinutes <= 0 && minDistance > 0) etaMinutes = 1; // ป้องกันเป็น 0
 
-                    // --- อัปเดต UX ให้ใหญ่เต็มตา ---
-                    document.getElementById('bus-car-id').innerText = `รถเบอร์: ${closestBus.gps_car_id} (${closestBus.gps_route_name})`;
+                    // อัปเดตหน้าจอ
+                    document.getElementById('bus-route-name').innerText = `สาย: ${closestBus.gps_route_name}`;
+                    document.getElementById('bus-car-id').innerText = `เบอร์รถ: ${closestBus.gps_car_id}`;
                     document.getElementById('eta-mins').innerText = etaMinutes;
-                    document.getElementById('distance-km').innerText = minDistance.toFixed(2);
+                    document.getElementById('distance-km').innerText = minDistance.toFixed(1);
                     
-                    log(`คันที่ใกล้สุด: ${closestBus.gps_car_id}, ห่าง ${minDistance.toFixed(2)} กม., ETA ${etaMinutes} นาที`);
+                    log(`พบรถห่าง ${minDistance.toFixed(2)} กม. เวลา ${etaMinutes} นาที`);
 
-                    // --- ระบบเสียงแจ้งเตือน (เงื่อนไขการพูด) ---
-                    const speechLevels = [10, 5, 2, 1]; // พูดที่นาทีเหล่านี้
+                    // --- 3. ระบบอ่านออกเสียง ---
+                    const routeText = closestBus.gps_route_name.split(':')[0]; // ดึงเฉพาะคำว่า "เขียว" หรือชื่อสายสั้นๆ
+
+                    // เงื่อนไขการพูด: 
+                    // 1. พูดทันทีเมื่อตรวจเจอครั้งแรก
+                    // 2. พูดเมื่อเวลาลดลงเหลือ 10, 5, 2, 1 นาที (ไม่พูดซ้ำนาทีเดิม)
+                    const speechLevels = [10, 5, 2, 1];
                     
-                    // พูดถ้าเวลาอยู่ในระดับที่กำหนด และยังไม่ได้พูดเวลานี้ไปในรอบก่อน
-                    if (speechLevels.includes(etaMinutes) && etaMinutes !== lastSpokenEta) {
-                        speak(`รถเมล์สาย 1 กำลังจะมาถึงในอีกประมาณ ${etaMinutes} นาทีค่ะ`);
-                        lastSpokenEta = etaMinutes; // บันทึกว่าพูดเวลานี้ไปแล้ว
+                    if (isFirstCalculation || (speechLevels.includes(etaMinutes) && etaMinutes !== lastSpokenEta)) {
+                        
+                        let speakText = `พบรถเมล์สาย${routeText} ระยะทาง ${minDistance.toFixed(1)} กิโลเมตร คาดว่าจะมาถึงในอีกประมาณ ${etaMinutes} นาทีค่ะ`;
+                        
+                        speakAlert(speakText);
+                        
+                        lastSpokenEta = etaMinutes;
+                        isFirstCalculation = false; // ปิดสถานะครั้งแรก
                     }
                     
-                    // ป้องกันการพูด ETA เดิมซ้ำๆ ถ้าเวลาไม่ขยับ (เช่น รถติด)
+                    // รีเซ็ตการพูด ถ้ารถติดหรืออยู่ไกลออกไป
                     if (etaMinutes > Math.max(...speechLevels) + 2) {
-                        lastSpokenEta = null; // Reset ถ้ารถอยู่ไกลออกไปใหม่
+                        lastSpokenEta = null; 
                     }
 
                 } else {
-                    document.getElementById('eta-mins').innerText = "--";
-                    log("ไม่พบข้อมูลรถในระบบขณะนี้");
+                    document.getElementById('bus-route-name').innerText = "ไม่พบรถในระบบ";
+                    document.getElementById('eta-mins').innerText = "-";
+                    document.getElementById('distance-km').innerText = "-.-";
                 }
             } catch (err) {
-                log("Fetch Error: " + err.message);
+                log("Fetch API ล้มเหลว: " + err.message);
             }
         }
 
+        // --- 4. สูตรคำนวณระยะทาง Haversine ---
         function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371;
+            const R = 6371; // รัศมีโลกเป็นกิโลเมตร
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
@@ -278,15 +286,16 @@
             return R * c;
         }
 
-        function speak(text) {
+        // --- 5. ฟังก์ชันส่งเสียงพูด ---
+        function speakAlert(text) {
             if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
+                window.speechSynthesis.cancel(); // ล้างคิวเสียงเก่า
                 const msg = new SpeechSynthesisUtterance(text);
-                msg.lang = 'th-TH';
-                msg.rate = 1.0; 
+                msg.lang = 'th-TH'; // เสียงภาษาไทย
+                msg.rate = 0.9;     // พูดช้าลงนิดนึงให้ฟังชัด
                 msg.pitch = 1.0;
                 window.speechSynthesis.speak(msg);
-                log("📢 พูดแจ้งเตือน: " + text);
+                log("🔊 อ่านออกเสียง: " + text);
             }
         }
     </script>
