@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bus Alert - ระบบแจ้งเตือนประจำป้าย</title>
+    <style>
+        /* CSS คงเดิมตาม Dark Mode UX ที่ออกแบบไว้ */
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #000000; 
+            color: #FFFFFF;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .app-container { flex: 1; display: flex; flex-direction: column; justify-content: space-between; padding: 30px 20px; }
+        header { text-align: center; margin-bottom: 20px; }
+        .logo { width: 85%; max-width: 320px; height: auto; margin: 0 auto 15px auto; display: block; }
+        
+        /* เน้นป้ายรถเมล์ให้เด่นขึ้น */
+        .stop-status { font-size: 16px; color: #00e676; margin-top: 5px; font-weight: bold; background: #111; padding: 10px; border-radius: 10px; display: inline-block;}
+
+        .main-display { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .bus-info-card { background-color: #1a1a1a; width: 100%; border-radius: 20px; padding: 15px; margin-bottom: 20px; border: 1px solid #333; }
+        .route-name { font-size: 18px; color: #00e676; font-weight: bold; margin-bottom: 5px; }
+        .car-id { font-size: 14px; color: #888; }
+        
+        .eta-container { margin: 20px 0; }
+        .eta-label { font-size: 20px; color: #ccc; margin-bottom: -10px; }
+        .eta-value { font-size: 130px; font-weight: 900; color: #FFFFFF; line-height: 1.1; text-shadow: 0 0 20px rgba(255,255,255,0.2); }
+        .eta-unit { font-size: 24px; color: #ccc; margin-top: -15px; }
+        
+        .distance-display { font-size: 22px; color: #aaa; font-weight: 300; background: #222; padding: 10px 20px; border-radius: 50px;}
+        .distance-value { font-weight: bold; color: #fff; }
+
+        #view-start { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; }
+        .instruction-text { font-size: 18px; color: #aaa; text-align: center; margin-bottom: 40px; line-height: 1.6; }
+        #view-tracking { display: none; height: 100%; }
+
+        footer { margin-top: 20px; }
+        .btn-huge {
+            background: linear-gradient(135deg, #00c853 0%, #00e676 100%);
+            color: #000; border: none; width: 100%; padding: 22px; font-size: 20px; font-weight: bold;
+            border-radius: 50px; cursor: pointer; box-shadow: 0 10px 20px rgba(0,230,118,0.3);
+        }
+        .btn-huge:active { transform: scale(0.97); }
+
+        #log { font-size: 11px; color: #666; height: 50px; overflow-y: scroll; background: #050505; padding: 5px 10px; border-top: 1px solid #111; text-align: left; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <img src="bussing.png" alt="BUSSING TRANSIT" class="logo" onerror="this.style.display='none'; document.getElementById('alt-logo').style.display='block';">
+            <h1 id="alt-logo" style="display:none; font-size: 30px; color: #ff007f;">BUSSING<span style="color:#00e676">TRANSIT</span></h1>
+            
+            <div class="stop-status" id="stop-name">📍 รอตรวจจับพิกัดป้าย...</div>
+        </header>
+
+        <div id="view-start">
+            <p class="instruction-text">
+                ระบบแจ้งเตือนรถเข้าป้ายอัตโนมัติ<br>
+                กรุณากดปุ่มเพื่อเปิดใช้งานระบบเสียงลำโพง
+            </p>
+        </div>
+
+        <div id="view-tracking" class="main-display">
+            <div class="bus-info-card">
+                <div class="route-name" id="bus-route-name">กำลังค้นหารถ...</div>
+                <div class="car-id" id="bus-car-id">--</div>
+            </div>
+
+            <div class="main-data">
+                <div class="eta-container">
+                    <div class="eta-label">จะเข้าป้ายในอีก</div>
+                    <div class="eta-value" id="eta-mins">-</div>
+                    <div class="eta-unit">นาที</div>
+                </div>
+                <div class="distance-display">
+                    ห่างจากป้าย <span class="distance-value" id="distance-km">-.-</span> กม.
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <button id="start-btn" class="btn-huge" onclick="initApp()">🔊 เริ่มระบบแจ้งเตือนประจำป้าย</button>
+        </footer>
+    </div>
+
+    <div id="log">ระบบพร้อมทำงาน...</div>
+
+    <script>
+        // ==========================================
+        // 🎯 ตั้งค่าพิกัดป้ายรถเมล์ที่นี่ (Hardcoded)
+        // ==========================================
+        const TARGET_STOP_NAME = "ป้ายหน้าเซ็นทรัล ขอนแก่น";
+        const TARGET_STOP_LAT = 16.431924;  // ละติจูดของป้าย
+        const TARGET_STOP_LNG = 102.825739; // ลองจิจูดของป้าย
+
+        let lastSpokenEta = null;
+        let isFirstCalculation = true;
+
+        const API_URL = 'https://public.bussing.app/gps-current/7';
+        const PROXY_URL = 'https://corsproxy.io/?' + encodeURIComponent(API_URL);
+        const CHECK_INTERVAL = 15000; 
+        const AVERAGE_SPEED_KMH = 15; 
+
+        function log(msg) {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += `<div>> ${msg}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function initApp() {
+            document.getElementById('start-btn').style.display = 'none';
+            document.getElementById('view-start').style.display = 'none';
+            document.getElementById('view-tracking').style.display = 'flex';
+            
+            // อัปเดตชื่อป้ายบนหน้าจอทันที
+            document.getElementById('stop-name').innerText = `📍 ประจำการที่: ${TARGET_STOP_NAME}`;
+            
+            // เปิดใช้งาน Audio Context
+            let testSpeech = new SpeechSynthesisUtterance('');
+            window.speechSynthesis.speak(testSpeech);
+
+            log(`เริ่มติดตามรถเข้าป้าย: ${TARGET_STOP_NAME}`);
+            
+            // ไม่ต้องรอ GPS มือถือแล้ว เริ่มดึงข้อมูลรถได้เลย
+            fetchAndCheckBus();
+            setInterval(fetchAndCheckBus, CHECK_INTERVAL);
+        }
+
+        async function fetchAndCheckBus() {
+            try {
+                const response = await fetch(PROXY_URL);
+                const result = await response.json();
+                const buses = result.data;
+
+                if (buses && buses.length > 0) {
+                    let closestBus = null;
+                    let minDistance = Infinity;
+
+                    // เทียบระยะทางระหว่าง "รถทุกคัน" กับ "ป้ายรถเมล์"
+                    buses.forEach(bus => {
+                        const busLat = parseFloat(bus.gps_lat);
+                        const busLng = parseFloat(bus.gps_long);
+                        
+                        // ใช้ TARGET_STOP_LAT, TARGET_STOP_LNG แทนพิกัดผู้ใช้
+                        const distance = calculateDistance(TARGET_STOP_LAT, TARGET_STOP_LNG, busLat, busLng);
+
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            closestBus = bus;
+                        }
+                    });
+
+                    let etaMinutes = Math.round((minDistance / AVERAGE_SPEED_KMH) * 60);
+                    if (etaMinutes <= 0 && minDistance > 0) etaMinutes = 1;
+
+                    document.getElementById('bus-route-name').innerText = `สาย: ${closestBus.gps_route_name}`;
+                    document.getElementById('bus-car-id').innerText = `เบอร์รถ: ${closestBus.gps_car_id}`;
+                    document.getElementById('eta-mins').innerText = etaMinutes;
+                    document.getElementById('distance-km').innerText = minDistance.toFixed(1);
+                    
+                    log(`พบรถห่างป้าย ${minDistance.toFixed(2)} กม. เวลา ${etaMinutes} นาที`);
+
+                    // --- ระบบอ่านออกเสียงประจำป้าย ---
+                    const routeText = closestBus.gps_route_name.split(':')[0]; 
+                    const speechLevels = [10, 5, 2, 1];
+                    
+                    if (isFirstCalculation || (speechLevels.includes(etaMinutes) && etaMinutes !== lastSpokenEta)) {
+                        
+                        // เปลี่ยนประโยคพูดให้เข้ากับการรอที่ป้าย
+                        let speakText = `รถเมล์สาย${routeText} จะเข้า${TARGET_STOP_NAME} ในอีกประมาณ ${etaMinutes} นาที ระยะทาง ${minDistance.toFixed(1)} กิโลเมตรค่ะ`;
+                        
+                        speakAlert(speakText);
+                        lastSpokenEta = etaMinutes;
+                        isFirstCalculation = false; 
+                    }
+                    
+                    if (etaMinutes > Math.max(...speechLevels) + 2) {
+                        lastSpokenEta = null; 
+                    }
+
+                } else {
+                    document.getElementById('bus-route-name').innerText = "ไม่พบรถในระบบ";
+                    document.getElementById('eta-mins').innerText = "-";
+                    document.getElementById('distance-km').innerText = "-.-";
+                }
+            } catch (err) {
+                log("Fetch API ล้มเหลว: " + err.message);
+            }
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; 
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        function speakAlert(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); 
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'th-TH'; 
+                msg.rate = 0.9;     
+                window.speechSynthesis.speak(msg);
+                log("🔊 พูด: " + text);
+            }
+        }
+    </script>
+</body>
+</html>
