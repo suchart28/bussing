@@ -116,7 +116,7 @@
             document.getElementById('view-start').style.display = 'none';
             document.getElementById('view-tracking').style.display = 'flex';
             
-            document.getElementById('stop-name').innerText = `📍 ประจำการที่: ${TARGET_STOP_NAME}`;
+            document.getElementById('stop-name').innerText = `📍 ${TARGET_STOP_NAME}`;
             
             let testSpeech = new SpeechSynthesisUtterance('');
             window.speechSynthesis.speak(testSpeech);
