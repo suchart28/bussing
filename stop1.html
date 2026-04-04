@@ -3,52 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bus Alert - ระบบแจ้งเตือน 3 ภาษา</title>
+    <title>Bus Alert - Khon Kaen City Bus</title>
     <style>
-        /* CSS คงเดิมตาม Dark Mode UX */
+        /* CSS เดิมที่มีความสวยงามในโหมดมืด */
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #000000; 
-            color: #FFFFFF;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            background-color: #000000; color: #FFFFFF; height: 100vh; display: flex; flex-direction: column; overflow: hidden;
         }
-
         .app-container { flex: 1; display: flex; flex-direction: column; justify-content: space-between; padding: 30px 20px; }
         header { text-align: center; margin-bottom: 20px; }
         .logo { width: 85%; max-width: 320px; height: auto; margin: 0 auto 15px auto; display: block; }
-        
         .stop-status { font-size: 16px; color: #00e676; margin-top: 5px; font-weight: bold; background: #111; padding: 10px; border-radius: 10px; display: inline-block;}
-
         .main-display { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
         .bus-info-card { background-color: #1a1a1a; width: 100%; border-radius: 20px; padding: 15px; margin-bottom: 20px; border: 1px solid #333; }
         .route-name { font-size: 18px; color: #00e676; font-weight: bold; margin-bottom: 5px; }
         .car-id { font-size: 14px; color: #888; }
-        
-        .eta-container { margin: 20px 0; }
-        .eta-label { font-size: 20px; color: #ccc; margin-bottom: -10px; }
         .eta-value { font-size: 130px; font-weight: 900; color: #FFFFFF; line-height: 1.1; text-shadow: 0 0 20px rgba(255,255,255,0.2); }
-        .eta-unit { font-size: 24px; color: #ccc; margin-top: -15px; }
-        
-        .distance-display { font-size: 22px; color: #aaa; font-weight: 300; background: #222; padding: 10px 20px; border-radius: 50px;}
-        .distance-value { font-weight: bold; color: #fff; }
-
-        #view-start { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; }
-        .instruction-text { font-size: 18px; color: #aaa; text-align: center; margin-bottom: 40px; line-height: 1.6; }
-        #view-tracking { display: none; height: 100%; }
-
-        footer { margin-top: 20px; }
+        .distance-display { font-size: 22px; color: #aaa; background: #222; padding: 10px 20px; border-radius: 50px;}
         .btn-huge {
             background: linear-gradient(135deg, #00c853 0%, #00e676 100%);
             color: #000; border: none; width: 100%; padding: 22px; font-size: 20px; font-weight: bold;
             border-radius: 50px; cursor: pointer; box-shadow: 0 10px 20px rgba(0,230,118,0.3);
         }
-        .btn-huge:active { transform: scale(0.97); }
-
-        #log { font-size: 11px; color: #666; height: 60px; overflow-y: scroll; background: #050505; padding: 5px 10px; border-top: 1px solid #111; text-align: left; }
+        #log { font-size: 11px; color: #666; height: 60px; overflow-y: scroll; background: #050505; padding: 5px 10px; border-top: 1px solid #111; }
     </style>
 </head>
 <body>
@@ -61,48 +39,45 @@
         </header>
 
         <div id="view-start">
-            <p class="instruction-text">
-                ระบบแจ้งเตือนรถเข้าป้าย (3 ภาษา)<br>
-                กรุณากดปุ่มเพื่อเปิดใช้งานระบบเสียงลำโพง
-            </p>
+            <div class="main-display">
+                <p style="color:#aaa; text-align:center; font-size: 18px; line-height: 1.6;">
+                    ยินดีต้อนรับสู่ขอนแก่น<br>ระบบแจ้งเตือน 3 ภาษา พร้อมเสียงดนตรี<br>กรุณากดปุ่มเพื่อเริ่มระบบ
+                </p>
+            </div>
         </div>
 
-        <div id="view-tracking" class="main-display">
+        <div id="view-tracking" class="main-display" style="display:none;">
             <div class="bus-info-card">
                 <div class="route-name" id="bus-route-name">กำลังค้นหารถ...</div>
                 <div class="car-id" id="bus-car-id">--</div>
             </div>
-
-            <div class="main-data">
-                <div class="eta-container">
-                    <div class="eta-label">จะเข้าป้ายในอีก</div>
-                    <div class="eta-value" id="eta-mins">-</div>
-                    <div class="eta-unit">นาที</div>
-                </div>
-                <div class="distance-display">
-                    ห่างจากป้าย <span class="distance-value" id="distance-km">-.-</span> กม.
-                </div>
+            <div class="eta-container">
+                <div style="color:#ccc;">รถจะถึงในอีก</div>
+                <div class="eta-value" id="eta-mins">-</div>
+                <div style="color:#ccc; font-size: 24px;">นาที</div>
             </div>
+            <div class="distance-display">ห่างจากป้าย <span id="distance-km">-.-</span> กม.</div>
         </div>
 
         <footer>
-            <button id="start-btn" class="btn-huge" onclick="initApp()">🔊 เริ่มระบบแจ้งเตือน</button>
+            <button id="start-btn" class="btn-huge" onclick="initApp()">🔊 เริ่มระบบและเสียงประกาศ</button>
         </footer>
     </div>
 
     <div id="log">ระบบพร้อมทำงาน...</div>
 
     <script>
-        // พิกัดป้ายรถเมล์เป้าหมาย
         const TARGET_STOP_NAME = "ป้ายหน้าเซ็นทรัล ขอนแก่น";
         const TARGET_STOP_LAT = 16.432924;  
         const TARGET_STOP_LNG = 102.823528; 
 
         let lastSpokenEta = null;
         let isFirstCalculation = true;
+        let audioCtx = null;
 
         const API_URL = 'https://public.bussing.app/gps-current/7';
-        const CHECK_INTERVAL = 15000; 
+        const CHECK_INTERVAL = 5000; // เช็ครถทุก 5 วินาที
+        const WELCOME_INTERVAL = 300000; // ประกาศต้อนรับทุก 5 นาที (300,000ms)
         const AVERAGE_SPEED_KMH = 15; 
 
         function log(msg) {
@@ -111,29 +86,60 @@
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 
+        // ฟังก์ชันสร้างเสียงดนตรี "ติ๊งหน่อง"
+        function playChime() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            const playNote = (freq, startTime, duration) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, startTime);
+                gain.gain.setValueAtTime(0.3, startTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(startTime);
+                osc.stop(startTime + duration);
+            };
+
+            const now = audioCtx.currentTime;
+            playNote(523.25, now, 0.8); // โน้ต C5
+            playNote(392.00, now + 0.5, 0.8); // โน้ต G4
+        }
+
         async function initApp() {
             document.getElementById('start-btn').style.display = 'none';
             document.getElementById('view-start').style.display = 'none';
             document.getElementById('view-tracking').style.display = 'flex';
-            
             document.getElementById('stop-name').innerText = `📍 ประจำการที่: ${TARGET_STOP_NAME}`;
             
-            // ปลดล็อกระบบเสียง
-            let testSpeech = new SpeechSynthesisUtterance('');
-            window.speechSynthesis.speak(testSpeech);
-
-            log(`เริ่มติดตามรถเข้าป้าย (รองรับเสียง 3 ภาษา)`);
+            // เริ่มการประกาศต้อนรับครั้งแรกทันที
+            announceWelcome();
             
+            // ตั้งเวลาประกาศต้อนรับทุกๆ 5 นาที
+            setInterval(announceWelcome, WELCOME_INTERVAL);
+
+            // เริ่มติดตามรถ
             fetchAndCheckBus();
             setInterval(fetchAndCheckBus, CHECK_INTERVAL);
         }
 
+        // ฟังก์ชันประกาศข้อความต้อนรับ 3 ภาษา
+        function announceWelcome() {
+            log("📢 เริ่มประกาศข้อความต้อนรับประจำสถานี");
+            
+            const th = "สวัสดีขอนแก่น นี่คือจุดจอดป้ายรถเมล์ขอนแก่นซิตี้บัส ท่านสามารถรอขึ้นรถเพื่อไปสนามบิน หรือข้ามไปฝั่งตรงข้ามเพื่อไป บขส 3 พอรถใกล้ถึง ฉันจะบอกให้ได้ยินอีกครั้ง";
+            const en = "Hello Khon Kaen. This is the Khon Kaen City Bus stop. You can wait here for the airport bus, or cross to the opposite side for Terminal 3. I will notify you again when the bus is arriving.";
+            const cn = "你好，昆敬。这是昆敬城市巴士站。您可以在这里等候前往机场的巴士，或者过马路到对面乘坐前往三号客运站的巴士。当巴士快到时，我会再次通知您。";
+
+            speakAlertMultiLang(th, en, cn, true);
+        }
+
         async function fetchAndCheckBus() {
             try {
-                // 🛑 [แก้ปัญหา Cache] สร้างลิงก์ใหม่ทุกรอบโดยใส่เวลาปัจจุบันต่อท้าย
                 const cacheBuster = '?t=' + new Date().getTime();
                 const freshProxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(API_URL + cacheBuster);
-
                 const response = await fetch(freshProxyUrl);
                 const result = await response.json();
                 const buses = result.data;
@@ -143,98 +149,61 @@
                     let minDistance = Infinity;
 
                     buses.forEach(bus => {
-                        const busLat = parseFloat(bus.gps_lat);
-                        const busLng = parseFloat(bus.gps_long);
-                        const distance = calculateDistance(TARGET_STOP_LAT, TARGET_STOP_LNG, busLat, busLng);
-
-                        if (distance < minDistance) {
-                            minDistance = distance;
-                            closestBus = bus;
-                        }
+                        const distance = calculateDistance(TARGET_STOP_LAT, TARGET_STOP_LNG, parseFloat(bus.gps_lat), parseFloat(bus.gps_long));
+                        if (distance < minDistance) { minDistance = distance; closestBus = bus; }
                     });
 
                     let etaMinutes = Math.round((minDistance / AVERAGE_SPEED_KMH) * 60);
                     if (etaMinutes <= 0 && minDistance > 0) etaMinutes = 1;
 
-                    // อัปเดตหน้าจอ
                     document.getElementById('bus-route-name').innerText = `สาย: ${closestBus.gps_route_name}`;
                     document.getElementById('bus-car-id').innerText = `เบอร์รถ: ${closestBus.gps_car_id}`;
                     document.getElementById('eta-mins').innerText = etaMinutes;
                     document.getElementById('distance-km').innerText = minDistance.toFixed(2);
                     
-                    // 🛑 [ตรวจสอบว่ารถวิ่งจริงไหม] ดึงเวลาล่าสุดจากข้อมูล GPS ของตัวรถ
-                    let lastGpsTime = "ไม่ทราบเวลา";
-                    if(closestBus.gps_created) {
-                        lastGpsTime = new Date(closestBus.gps_created).toLocaleTimeString('th-TH');
-                    }
-                    
-                    log(`พบรถห่าง ${minDistance.toFixed(2)} กม. เวลา ${etaMinutes} นาที (พิกัด GPS อัปเดตล่าสุด: ${lastGpsTime})`);
-
-                    // --- การสร้างข้อความ 3 ภาษา ---
                     const speechLevels = [10, 5, 2, 1];
-                    
                     if (isFirstCalculation || (speechLevels.includes(etaMinutes) && etaMinutes !== lastSpokenEta)) {
-                        
                         const routeTextTH = closestBus.gps_route_name.split(':')[0]; 
                         const carId = closestBus.gps_car_id;
-                        const distText = minDistance.toFixed(1);
-
-                        let textTH = `ประกาศ รถเมล์สาย${routeTextTH} จะเข้า${TARGET_STOP_NAME} ในอีกประมาณ ${etaMinutes} นาที ระยะทาง ${distText} กิโลเมตรค่ะ`;
-                        let textEN = `Attention please. Bus number ${carId} will arrive in approximately ${etaMinutes} minutes. Distance is ${distText} kilometers.`;
-                        let textCN = `请注意，${carId} 号公交车将在大约 ${etaMinutes} 分钟后到达。 距离 ${distText} 公里。`;
                         
-                        speakAlertMultiLang(textTH, textEN, textCN);
+                        const textTH = `ประกาศ รถเมล์สาย${routeTextTH} จะเข้าจอดในอีก ${etaMinutes} นาทีค่ะ`;
+                        const textEN = `Attention, bus number ${carId} will arrive in ${etaMinutes} minutes.`;
+                        const textCN = `请注意，${carId} 号公交车将在 ${etaMinutes} 分钟后到达。`;
                         
+                        speakAlertMultiLang(textTH, textEN, textCN, false);
                         lastSpokenEta = etaMinutes;
                         isFirstCalculation = false; 
                     }
-                    
-                    if (etaMinutes > Math.max(...speechLevels) + 2) {
-                        lastSpokenEta = null; 
-                    }
-
-                } else {
-                    document.getElementById('bus-route-name').innerText = "ไม่พบรถในระบบ";
-                    document.getElementById('eta-mins').innerText = "-";
-                    document.getElementById('distance-km').innerText = "-.-";
                 }
-            } catch (err) {
-                log("Fetch API ล้มเหลว: " + err.message);
+            } catch (err) { log("Error: " + err.message); }
+        }
+
+        function speakAlertMultiLang(th, en, cn, isWelcome) {
+            if ('speechSynthesis' in window) {
+                // ถ้าเป็นการแจ้งเตือนรถถึง ให้หยุดเสียงที่ค้างอยู่ (เช่นเสียงต้อนรับ) เพื่อแจ้งเรื่องด่วนก่อน
+                if (!isWelcome) window.speechSynthesis.cancel(); 
+
+                // เล่นเสียงดนตรีนำ
+                playChime();
+
+                // หน่วงเวลาเล็กน้อยหลังดนตรีจบแล้วค่อยเริ่มพูด
+                setTimeout(() => {
+                    [ {t: th, l: 'th-TH'}, {t: en, l: 'en-US'}, {t: cn, l: 'zh-CN'} ].forEach(item => {
+                        let msg = new SpeechSynthesisUtterance(item.t);
+                        msg.lang = item.l;
+                        msg.rate = 0.9;
+                        window.speechSynthesis.speak(msg);
+                    });
+                }, 1200);
             }
         }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; 
+            const R = 6371;
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c;
-        }
-
-        function speakAlertMultiLang(thText, enText, cnText) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); 
-
-                let msgTH = new SpeechSynthesisUtterance(thText);
-                msgTH.lang = 'th-TH'; 
-                msgTH.rate = 0.9;     
-                window.speechSynthesis.speak(msgTH);
-
-                let msgEN = new SpeechSynthesisUtterance(enText);
-                msgEN.lang = 'en-US'; 
-                msgEN.rate = 0.9;     
-                window.speechSynthesis.speak(msgEN);
-
-                let msgCN = new SpeechSynthesisUtterance(cnText);
-                msgCN.lang = 'zh-CN'; 
-                msgCN.rate = 0.9;     
-                window.speechSynthesis.speak(msgCN);
-
-                log("🔊 ประกาศ 3 ภาษา: TH, EN, CN");
-            }
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         }
     </script>
 </body>
