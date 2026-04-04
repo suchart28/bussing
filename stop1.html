@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bus Alert - Khon Kaen City Bus</title>
+    <title>Bus Alert - Khon Kaen City Bus (Female Voice)</title>
     <style>
-        /* CSS เดิมที่มีความสวยงามในโหมดมืด */
+        /* CSS สไตล์ Dark Mode คงเดิมเพื่อความสวยงาม */
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -41,7 +41,7 @@
         <div id="view-start">
             <div class="main-display">
                 <p style="color:#aaa; text-align:center; font-size: 18px; line-height: 1.6;">
-                    ยินดีต้อนรับสู่ขอนแก่น<br>ระบบแจ้งเตือน 3 ภาษา พร้อมเสียงดนตรี<br>กรุณากดปุ่มเพื่อเริ่มระบบ
+                    ยินดีต้อนรับสู่ขอนแก่น<br>ระบบแจ้งเตือนเสียงผู้หญิง 3 ภาษา<br>อัปเดตข้อมูลทุก 30 วินาที
                 </p>
             </div>
         </div>
@@ -60,7 +60,7 @@
         </div>
 
         <footer>
-            <button id="start-btn" class="btn-huge" onclick="initApp()">🔊 เริ่มระบบและเสียงประกาศ</button>
+            <button id="start-btn" class="btn-huge" onclick="initApp()">🔊 เริ่มระบบ (เสียงผู้หญิง)</button>
         </footer>
     </div>
 
@@ -76,8 +76,11 @@
         let audioCtx = null;
 
         const API_URL = 'https://public.bussing.app/gps-current/7';
-        const CHECK_INTERVAL = 5000; // เช็ครถทุก 5 วินาที
-        const WELCOME_INTERVAL = 300000; // ประกาศต้อนรับทุก 5 นาที (300,000ms)
+        
+        // 🎯 1. แก้ไขเป็น 30 วินาที (30,000 มิลลิวินาที)
+        const CHECK_INTERVAL = 30000; 
+        
+        const WELCOME_INTERVAL = 300000; 
         const AVERAGE_SPEED_KMH = 15; 
 
         function log(msg) {
@@ -86,26 +89,21 @@
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 
-        // ฟังก์ชันสร้างเสียงดนตรี "ติ๊งหน่อง"
         function playChime() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            
             const playNote = (freq, startTime, duration) => {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(freq, startTime);
-                gain.gain.setValueAtTime(0.3, startTime);
+                gain.gain.setValueAtTime(0.2, startTime);
                 gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start(startTime);
-                osc.stop(startTime + duration);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(startTime); osc.stop(startTime + duration);
             };
-
             const now = audioCtx.currentTime;
-            playNote(523.25, now, 0.8); // โน้ต C5
-            playNote(392.00, now + 0.5, 0.8); // โน้ต G4
+            playNote(523.25, now, 0.8); 
+            playNote(392.00, now + 0.5, 0.8); 
         }
 
         async function initApp() {
@@ -114,22 +112,16 @@
             document.getElementById('view-tracking').style.display = 'flex';
             document.getElementById('stop-name').innerText = `📍 ประจำการที่: ${TARGET_STOP_NAME}`;
             
-            // เริ่มการประกาศต้อนรับครั้งแรกทันที
             announceWelcome();
-            
-            // ตั้งเวลาประกาศต้อนรับทุกๆ 5 นาที
             setInterval(announceWelcome, WELCOME_INTERVAL);
 
-            // เริ่มติดตามรถ
             fetchAndCheckBus();
             setInterval(fetchAndCheckBus, CHECK_INTERVAL);
         }
 
-        // ฟังก์ชันประกาศข้อความต้อนรับ 3 ภาษา
         function announceWelcome() {
-            log("📢 เริ่มประกาศข้อความต้อนรับประจำสถานี");
-            
-            const th = "สวัสดีขอนแก่น นี่คือจุดจอดป้ายรถเมล์ขอนแก่นซิตี้บัส ท่านสามารถรอขึ้นรถเพื่อไปสนามบิน หรือข้ามไปฝั่งตรงข้ามเพื่อไป บขส 3 พอรถใกล้ถึง ฉันจะบอกให้ได้ยินอีกครั้ง";
+            log("📢 ประกาศต้อนรับ (รอบ 5 นาที)");
+            const th = "สวัสดีขอนแก่น นี่คือจุดจอดป้ายรถเมล์ขอนแก่นซิตี้บัส ท่านสามารถรอขึ้นรถเพื่อไปสนามบิน หรือข้ามไปฝั่งตรงข้ามเพื่อไป บขส 3 พอรถใกล้ถึง ฉันจะบอกให้ได้ยินอีกครั้งค่ะ";
             const en = "Hello Khon Kaen. This is the Khon Kaen City Bus stop. You can wait here for the airport bus, or cross to the opposite side for Terminal 3. I will notify you again when the bus is arriving.";
             const cn = "你好，昆敬。这是昆敬城市巴士站。您可以在这里等候前往机场的巴士，或者过马路到对面乘坐前往三号客运站的巴士。当巴士快到时，我会再次通知您。";
 
@@ -178,20 +170,25 @@
             } catch (err) { log("Error: " + err.message); }
         }
 
+        // 🎯 2. ปรับจูนเสียงให้เป็นผู้หญิง (Pitch & Rate)
         function speakAlertMultiLang(th, en, cn, isWelcome) {
             if ('speechSynthesis' in window) {
-                // ถ้าเป็นการแจ้งเตือนรถถึง ให้หยุดเสียงที่ค้างอยู่ (เช่นเสียงต้อนรับ) เพื่อแจ้งเรื่องด่วนก่อน
                 if (!isWelcome) window.speechSynthesis.cancel(); 
 
-                // เล่นเสียงดนตรีนำ
                 playChime();
 
-                // หน่วงเวลาเล็กน้อยหลังดนตรีจบแล้วค่อยเริ่มพูด
                 setTimeout(() => {
-                    [ {t: th, l: 'th-TH'}, {t: en, l: 'en-US'}, {t: cn, l: 'zh-CN'} ].forEach(item => {
-                        let msg = new SpeechSynthesisUtterance(item.t);
-                        msg.lang = item.l;
-                        msg.rate = 0.9;
+                    const utterances = [
+                        { text: th, lang: 'th-TH', pitch: 1.1, rate: 1.0 }, // ไทย: ปรับ Pitch สูงขึ้นให้ดูเป็นผู้หญิงชัดขึ้น
+                        { text: en, lang: 'en-US', pitch: 1.0, rate: 0.9 },
+                        { text: cn, lang: 'zh-CN', pitch: 1.0, rate: 0.9 }
+                    ];
+
+                    utterances.forEach(item => {
+                        let msg = new SpeechSynthesisUtterance(item.text);
+                        msg.lang = item.lang;
+                        msg.pitch = item.pitch;
+                        msg.rate = item.rate;
                         window.speechSynthesis.speak(msg);
                     });
                 }, 1200);
