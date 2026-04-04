@@ -3,51 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bus Alert - Khon Kaen City Bus (1080x1920)</title>
+    <title>Bus Alert - Khon Kaen City Bus (Perfect Fit)</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        
+        /* ล็อก Body ไม่ให้ Scroll และกำหนดให้เต็มจอพอดี */
         body { 
-            background-color: #000000; color: #FFFFFF; height: 100vh; width: 100vw; display: flex; flex-direction: column; overflow: hidden;
+            background-color: #000000; color: #FFFFFF; 
+            height: 100vh; height: 100dvh; /* ใช้ dvh เพื่อรองรับ Safari/Chrome บนมือถือที่มีแถบ URL */
+            width: 100vw; display: flex; flex-direction: column; overflow: hidden;
         }
         
-        .app-container { flex: 1; display: flex; flex-direction: column; padding: 3vh 4vw; max-width: 1080px; margin: 0 auto; width: 100%; }
+        .app-container { 
+            flex: 1; display: flex; flex-direction: column; 
+            padding: 2vh 4vw; max-width: 1080px; margin: 0 auto; width: 100%; 
+            height: 100%; /* บังคับใช้ความสูง 100% ของคอนเทนเนอร์ */
+        }
         
-        /* ส่วนหัวและโลโก้ */
-        header { text-align: center; margin-bottom: 2vh; }
-        .logo { width: auto; max-width: 60%; height: 10vh; margin: 0 auto 2vh auto; display: block; object-fit: contain; }
-        .stop-status { font-size: 2.5vh; color: #00e676; font-weight: bold; background: #111; padding: 1.5vh 3vw; border-radius: 50px; display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; box-shadow: 0 4px 15px rgba(0,230,118,0.1);}
+        /* 1. ส่วนหัวและโลโก้ (กำหนดขนาดคงที่ ไม่ให้หด) */
+        header { text-align: center; margin-bottom: 2vh; flex-shrink: 0; }
+        .logo { width: auto; max-width: 60%; height: 8vh; margin: 0 auto 1.5vh auto; display: block; object-fit: contain; }
+        .stop-status { font-size: clamp(14px, 2.2vh, 24px); color: #00e676; font-weight: bold; background: #111; padding: 1vh 4vw; border-radius: 50px; display: inline-block; box-shadow: 0 4px 15px rgba(0,230,118,0.1); width: auto;}
 
-        /* เมนูสลับภาษา */
-        .lang-switcher { display: flex; justify-content: center; gap: 2vw; margin-bottom: 3vh; display: none; }
-        .lang-btn { flex: 1; padding: 2vh; background: #222; color: #aaa; border: 3px solid #333; border-radius: 20px; font-size: 2.5vh; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        /* 2. เมนูสลับภาษา (กำหนดขนาดคงที่) */
+        .lang-switcher { display: flex; justify-content: center; gap: 2vw; margin-bottom: 2vh; display: none; flex-shrink: 0; }
+        .lang-btn { flex: 1; padding: 1.5vh; background: #222; color: #aaa; border: 2px solid #333; border-radius: 15px; font-size: clamp(14px, 2vh, 22px); font-weight: bold; cursor: pointer; transition: 0.2s; }
         .lang-btn.active { background: #00e676; color: #000; border-color: #00c853; box-shadow: 0 5px 15px rgba(0,230,118,0.3); }
 
-        /* ส่วนแสดงผลหลัก */
-        .main-display { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; width: 100%; }
+        /* 3. ส่วนแสดงผลหลัก (ใช้พื้นที่ที่เหลือทั้งหมด) */
+        .main-display { flex: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center; width: 100%; min-height: 0; }
         
-        .eta-container { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; margin-bottom: 2vh; }
-        .eta-label { color: #aaa; font-size: 4vh; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0; }
-        
-        /* ตัวเลขนาที - ใหญ่สุดๆ ตามสัดส่วนจอ */
-        .eta-value { font-size: 32vh; font-weight: 900; color: #FFFFFF; line-height: 1; text-shadow: 0 10px 40px rgba(0,230,118,0.4); margin: 1vh 0; }
-        .eta-unit { color: #00e676; font-size: 6vh; font-weight: bold; margin-top: 0; }
+        /* -- ส่วนนาที (ยืดหยุ่นตรงกลาง) -- */
+        .eta-container { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; min-height: 0; }
+        .eta-label { color: #aaa; font-size: clamp(16px, 3vh, 30px); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0; }
+        /* ลดขนาดตัวเลขลงมานิดหน่อย และใช้ clamp ป้องกันล้นจอ */
+        .eta-value { font-size: clamp(100px, 25vh, 400px); font-weight: 900; color: #FFFFFF; line-height: 1; text-shadow: 0 10px 40px rgba(0,230,118,0.4); margin: 0; }
+        .eta-unit { color: #00e676; font-size: clamp(24px, 4.5vh, 45px); font-weight: bold; margin-top: 0; }
 
-        /* การ์ดข้อมูลรถด้านล่าง (ใหญ่และอ่านง่ายขึ้นมาก) */
-        .bus-info-card { background: linear-gradient(145deg, #1a1a1a, #111); width: 100%; border-radius: 40px; padding: 4vh 5vw; margin-bottom: 2vh; border: 2px solid #333; display: flex; flex-direction: column; gap: 3vh; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .info-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2a2a2a; padding-bottom: 2.5vh; }
+        /* -- ส่วนการ์ดข้อมูลด้านล่าง (ล็อกขนาด ไม่ให้หด ไม่ให้หลุดจอ) -- */
+        .bus-info-card { 
+            background: linear-gradient(145deg, #1a1a1a, #111); width: 100%; border-radius: 30px; 
+            padding: 3vh 5vw; margin-bottom: 1vh; border: 2px solid #333; 
+            display: flex; flex-direction: column; gap: 2vh; box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            flex-shrink: 0; /* สำคัญมาก: ป้องกันการโดนบีบจนตกขอบ */
+        }
+        .info-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2a2a2a; padding-bottom: 1.5vh; }
         .info-row:last-child { border-bottom: none; padding-bottom: 0; }
         
-        /* ขนาดตัวอักษรข้อมูล */
-        .info-label { color: #888; font-size: 3.5vh; font-weight: 500; }
-        .info-value { color: #fff; font-size: 4vh; font-weight: bold; }
-        .info-value.highlight { color: #00e676; font-size: 4.5vh; text-shadow: 0 0 15px rgba(0,230,118,0.3); }
+        .info-label { color: #888; font-size: clamp(14px, 2.5vh, 26px); font-weight: 500; white-space: nowrap; }
+        .info-value { color: #fff; font-size: clamp(16px, 2.8vh, 30px); font-weight: bold; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60%; }
+        .info-value.highlight { color: #00e676; font-size: clamp(18px, 3.2vh, 36px); text-shadow: 0 0 15px rgba(0,230,118,0.3); }
 
         /* หน้าแรกก่อนเริ่มระบบ */
         #view-start { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .start-text { color:#aaa; text-align:center; font-size: 3vh; line-height: 1.6; margin-bottom: 5vh; }
-        .btn-huge { background: linear-gradient(135deg, #00c853 0%, #00e676 100%); color: #000; border: none; width: 100%; padding: 3vh; font-size: 3.5vh; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 10px 30px rgba(0,230,118,0.4); }
+        .start-text { color:#aaa; text-align:center; font-size: 2.5vh; line-height: 1.6; margin-bottom: 4vh; }
+        .btn-huge { background: linear-gradient(135deg, #00c853 0%, #00e676 100%); color: #000; border: none; width: 100%; padding: 2.5vh; font-size: 3vh; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 10px 30px rgba(0,230,118,0.4); flex-shrink: 0;}
         
-        #log { font-size: 1.5vh; color: #666; height: 6vh; overflow-y: scroll; background: #050505; padding: 1vh 2vw; border-top: 1px solid #111; }
+        /* 4. กล่อง Log (ล็อกขนาดคงที่ล่างสุด) */
+        #log { font-size: 11px; color: #555; height: 5vh; overflow-y: scroll; background: #050505; padding: 1vh 2vw; border-top: 1px solid #111; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -55,7 +68,7 @@
     <div class="app-container">
         <header>
             <img src="bussing.png" alt="BUSSING TRANSIT" class="logo" onerror="this.style.display='none'; document.getElementById('alt-logo').style.display='block';">
-            <h1 id="alt-logo" style="display:none; font-size: 5vh; color: #ff007f; margin-bottom: 2vh;">BUSSING<span style="color:#00e676">TRANSIT</span></h1>
+            <h1 id="alt-logo" style="display:none; font-size: 4vh; color: #ff007f; margin-bottom: 1vh;">BUSSING<span style="color:#00e676">TRANSIT</span></h1>
             <div class="stop-status" id="ui-stop-name">📍 ป้าย: เซ็นทรัลพลาซ่า ขอนแก่น</div>
         </header>
 
@@ -253,6 +266,7 @@
                     }
                 } else {
                     document.getElementById('bus-route-name').innerText = uiText[currentLang].searching;
+                    document.getElementById('bus-car-id').innerText = "--";
                     document.getElementById('eta-mins').innerText = "-";
                     document.getElementById('distance-km').innerText = "-.-";
                 }
