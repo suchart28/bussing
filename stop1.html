@@ -118,9 +118,9 @@
         function announceWelcome() {
             log("📢 ประกาศต้อนรับ (รอบ 5 นาที)");
             // ปรับประโยคภาษาไทยให้เป็นธรรมชาติและเป็นทางการมากขึ้น
-            const th = "ผู้โดยสารโปรดทราบ ขณะนี้ท่านอยู่ที่ป้าย ขอนแก่นซิตี้บัส ท่านสามารถรอรถเพื่อเดินทางไปยังสนามบิน หรือข้ามถนนไปยังฝั่งตรงข้าม เพื่อเดินทางไปสถานีขนส่งผู้โดยสารแห่งที่ 3 ระบบจะทำการแจ้งเตือนให้ทราบอีกครั้ง เมื่อรถใกล้เข้าจอด";
-            const en = "Hello Khon Kaen. This is the Khon Kaen City Bus stop. You can wait here for the airport bus, or cross to the opposite side for Terminal 3. I will notify you again when the bus is arriving.";
-            const cn = "你好，昆敬。这是昆敬城市巴士站。您可以在这里等候前往机场的巴士，或者过马路到对面乘坐前往三号客运站的巴士。当巴士快到时，我会再次通知您。";
+            const th = "สวัสดีขอนแก่น ผู้โดยสารขอนแก่นซิตี้บัส โปรดทราบ ขณะนี้ท่านอยู่ที่ป้าย เซ็นทรัลพลาซ่าขอนแก่น ท่านสามารถรอรถเพื่อเดินทางไปยังสนามบิน หรือข้ามถนนไปยังป้ายรถเมล์ฝั่งตรงข้าม เพื่อเดินทางไปสถานีขนส่งผู้โดยสารแห่งที่ 3 ระบบจะทำการแจ้งเตือนให้ทราบอีกครั้ง เมื่อรถใกล้เข้าจอด";
+            const en = "Hello Khon Kaen Khon Kaen City Bus passengers, please note: You are currently at the Central Plaza Khon Kaen bus stop. You can wait for a bus to the airport or cross the road to the bus stop on the opposite side to go to the Third Bus Terminal. The system will notify you again when the bus is approaching.";
+            const cn = "各位孔敬市巴士乘客，您好！您目前位于孔敬中央广场巴士站。您可以在此等候前往机场的巴士，或者过马路到马路对面的巴士站前往第三巴士总站。巴士即将到达时，系统会再次通知您。";
 
             speakAlertMultiLang(th, en, cn, true);
         }
