@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bus Alert - Khon Kaen City Bus (Female Voice)</title>
+    <title>Bus Alert - Khon Kaen City Bus (Natural Voice)</title>
     <style>
-        /* CSS สไตล์ Dark Mode คงเดิมเพื่อความสวยงาม */
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -41,7 +40,7 @@
         <div id="view-start">
             <div class="main-display">
                 <p style="color:#aaa; text-align:center; font-size: 18px; line-height: 1.6;">
-                    ยินดีต้อนรับสู่ขอนแก่น<br>ระบบแจ้งเตือนเสียงผู้หญิง 3 ภาษา<br>อัปเดตข้อมูลทุก 30 วินาที
+                    ระบบแจ้งเตือนป้ายรถเมล์อัจฉริยะ<br>อัปเดตข้อมูลทุก 30 วินาที
                 </p>
             </div>
         </div>
@@ -60,7 +59,7 @@
         </div>
 
         <footer>
-            <button id="start-btn" class="btn-huge" onclick="initApp()">🔊 เริ่มระบบ (เสียงผู้หญิง)</button>
+            <button id="start-btn" class="btn-huge" onclick="initApp()">🔊 เริ่มระบบประกาศสาธารณะ</button>
         </footer>
     </div>
 
@@ -76,10 +75,7 @@
         let audioCtx = null;
 
         const API_URL = 'https://public.bussing.app/gps-current/7';
-        
-        // 🎯 1. แก้ไขเป็น 30 วินาที (30,000 มิลลิวินาที)
         const CHECK_INTERVAL = 30000; 
-        
         const WELCOME_INTERVAL = 300000; 
         const AVERAGE_SPEED_KMH = 15; 
 
@@ -121,7 +117,8 @@
 
         function announceWelcome() {
             log("📢 ประกาศต้อนรับ (รอบ 5 นาที)");
-            const th = "สวัสดีขอนแก่น นี่คือจุดจอดป้ายรถเมล์ขอนแก่นซิตี้บัส ท่านสามารถรอขึ้นรถเพื่อไปสนามบิน หรือข้ามไปฝั่งตรงข้ามเพื่อไป บขส 3 พอรถใกล้ถึง ฉันจะบอกให้ได้ยินอีกครั้งค่ะ";
+            // ปรับประโยคภาษาไทยให้เป็นธรรมชาติและเป็นทางการมากขึ้น
+            const th = "ผู้โดยสารโปรดทราบ ขณะนี้ท่านอยู่ที่ป้าย ขอนแก่นซิตี้บัส ท่านสามารถรอรถเพื่อเดินทางไปยังสนามบิน หรือข้ามถนนไปยังฝั่งตรงข้าม เพื่อเดินทางไปสถานีขนส่งผู้โดยสารแห่งที่ 3 ระบบจะทำการแจ้งเตือนให้ทราบอีกครั้ง เมื่อรถใกล้เข้าจอด";
             const en = "Hello Khon Kaen. This is the Khon Kaen City Bus stop. You can wait here for the airport bus, or cross to the opposite side for Terminal 3. I will notify you again when the bus is arriving.";
             const cn = "你好，昆敬。这是昆敬城市巴士站。您可以在这里等候前往机场的巴士，或者过马路到对面乘坐前往三号客运站的巴士。当巴士快到时，我会再次通知您。";
 
@@ -158,9 +155,10 @@
                         const routeTextTH = closestBus.gps_route_name.split(':')[0]; 
                         const carId = closestBus.gps_car_id;
                         
-                        const textTH = `ประกาศ รถเมล์สาย${routeTextTH} จะเข้าจอดในอีก ${etaMinutes} นาทีค่ะ`;
-                        const textEN = `Attention, bus number ${carId} will arrive in ${etaMinutes} minutes.`;
-                        const textCN = `请注意，${carId} 号公交车将在 ${etaMinutes} 分钟后到达。`;
+                        // ปรับประโยคตอนรถใกล้ถึง
+                        const textTH = `ผู้โดยสารโปรดทราบ รถเมล์สาย${routeTextTH} จะเข้าจอดในอีกประมาณ ${etaMinutes} นาที`;
+                        const textEN = `Attention, bus number ${carId} will arrive in approximately ${etaMinutes} minutes.`;
+                        const textCN = `请注意，${carId} 号公交车将在大约 ${etaMinutes} 分钟后到达。`;
                         
                         speakAlertMultiLang(textTH, textEN, textCN, false);
                         lastSpokenEta = etaMinutes;
@@ -170,7 +168,6 @@
             } catch (err) { log("Error: " + err.message); }
         }
 
-        // 🎯 2. ปรับจูนเสียงให้เป็นผู้หญิง (Pitch & Rate)
         function speakAlertMultiLang(th, en, cn, isWelcome) {
             if ('speechSynthesis' in window) {
                 if (!isWelcome) window.speechSynthesis.cancel(); 
@@ -178,8 +175,9 @@
                 playChime();
 
                 setTimeout(() => {
+                    // การเว้นวรรคใน text จะช่วยให้ AI เว้นจังหวะหายใจได้เป็นธรรมชาติขึ้น
                     const utterances = [
-                        { text: th, lang: 'th-TH', pitch: 1.1, rate: 1.0 }, // ไทย: ปรับ Pitch สูงขึ้นให้ดูเป็นผู้หญิงชัดขึ้น
+                        { text: th, lang: 'th-TH', pitch: 1.1, rate: 1.0 }, 
                         { text: en, lang: 'en-US', pitch: 1.0, rate: 0.9 },
                         { text: cn, lang: 'zh-CN', pitch: 1.0, rate: 0.9 }
                     ];
