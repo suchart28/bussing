@@ -3,64 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bus Alert - Khon Kaen City Bus (Perfect Fit)</title>
+    <title>Bus Alert - Khon Kaen City Bus (Marquee & Alert)</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         
-        /* ล็อก Body ไม่ให้ Scroll และกำหนดให้เต็มจอพอดี */
+        /* เพิ่ม Animation ให้พื้นหลังกระพริบสีเขียว */
         body { 
             background-color: #000000; color: #FFFFFF; 
-            height: 100vh; height: 100dvh; /* ใช้ dvh เพื่อรองรับ Safari/Chrome บนมือถือที่มีแถบ URL */
+            height: 100vh; height: 100dvh; 
             width: 100vw; display: flex; flex-direction: column; overflow: hidden;
+            transition: background-color 0.5s;
+        }
+        body.flash-green {
+            animation: alert-flash 1.5s infinite;
+        }
+        @keyframes alert-flash {
+            0% { background-color: #000000; }
+            50% { background-color: #004d1a; /* สีเขียวเข้มเตือนสายตา ไม่สว่างจนแสบตา */ }
+            100% { background-color: #000000; }
         }
         
         .app-container { 
             flex: 1; display: flex; flex-direction: column; 
             padding: 2vh 4vw; max-width: 1080px; margin: 0 auto; width: 100%; 
-            height: 100%; /* บังคับใช้ความสูง 100% ของคอนเทนเนอร์ */
+            height: 100%; z-index: 10;
         }
         
-        /* 1. ส่วนหัวและโลโก้ (กำหนดขนาดคงที่ ไม่ให้หด) */
         header { text-align: center; margin-bottom: 2vh; flex-shrink: 0; }
         .logo { width: auto; max-width: 60%; height: 8vh; margin: 0 auto 1.5vh auto; display: block; object-fit: contain; }
         .stop-status { font-size: clamp(14px, 2.2vh, 24px); color: #00e676; font-weight: bold; background: #111; padding: 1vh 4vw; border-radius: 50px; display: inline-block; box-shadow: 0 4px 15px rgba(0,230,118,0.1); width: auto;}
 
-        /* 2. เมนูสลับภาษา (กำหนดขนาดคงที่) */
         .lang-switcher { display: flex; justify-content: center; gap: 2vw; margin-bottom: 2vh; display: none; flex-shrink: 0; }
         .lang-btn { flex: 1; padding: 1.5vh; background: #222; color: #aaa; border: 2px solid #333; border-radius: 15px; font-size: clamp(14px, 2vh, 22px); font-weight: bold; cursor: pointer; transition: 0.2s; }
         .lang-btn.active { background: #00e676; color: #000; border-color: #00c853; box-shadow: 0 5px 15px rgba(0,230,118,0.3); }
 
-        /* 3. ส่วนแสดงผลหลัก (ใช้พื้นที่ที่เหลือทั้งหมด) */
         .main-display { flex: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center; width: 100%; min-height: 0; }
         
-        /* -- ส่วนนาที (ยืดหยุ่นตรงกลาง) -- */
         .eta-container { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; min-height: 0; }
         .eta-label { color: #aaa; font-size: clamp(16px, 3vh, 30px); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0; }
-        /* ลดขนาดตัวเลขลงมานิดหน่อย และใช้ clamp ป้องกันล้นจอ */
         .eta-value { font-size: clamp(100px, 25vh, 400px); font-weight: 900; color: #FFFFFF; line-height: 1; text-shadow: 0 10px 40px rgba(0,230,118,0.4); margin: 0; }
         .eta-unit { color: #00e676; font-size: clamp(24px, 4.5vh, 45px); font-weight: bold; margin-top: 0; }
 
-        /* -- ส่วนการ์ดข้อมูลด้านล่าง (ล็อกขนาด ไม่ให้หด ไม่ให้หลุดจอ) -- */
         .bus-info-card { 
-            background: linear-gradient(145deg, #1a1a1a, #111); width: 100%; border-radius: 30px; 
+            background: linear-gradient(145deg, rgba(26,26,26,0.95), rgba(17,17,17,0.95)); width: 100%; border-radius: 30px; 
             padding: 3vh 5vw; margin-bottom: 1vh; border: 2px solid #333; 
             display: flex; flex-direction: column; gap: 2vh; box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-            flex-shrink: 0; /* สำคัญมาก: ป้องกันการโดนบีบจนตกขอบ */
+            flex-shrink: 0; 
         }
         .info-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2a2a2a; padding-bottom: 1.5vh; }
         .info-row:last-child { border-bottom: none; padding-bottom: 0; }
         
-        .info-label { color: #888; font-size: clamp(14px, 2.5vh, 26px); font-weight: 500; white-space: nowrap; }
-        .info-value { color: #fff; font-size: clamp(16px, 2.8vh, 30px); font-weight: bold; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60%; }
-        .info-value.highlight { color: #00e676; font-size: clamp(18px, 3.2vh, 36px); text-shadow: 0 0 15px rgba(0,230,118,0.3); }
+        .info-label { color: #888; font-size: clamp(14px, 2.5vh, 26px); font-weight: 500; white-space: nowrap; flex-shrink: 0; margin-right: 15px;}
+        .info-value { color: #fff; font-size: clamp(16px, 2.8vh, 30px); font-weight: bold; text-align: right; }
+        
+        /* ตั้งค่าสำหรับตัวหนังสือวิ่ง (Marquee) */
+        .marquee-container {
+            max-width: 65%; /* ล็อกพื้นที่ไม่ให้เกิน */
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .marquee-content {
+            display: inline-block;
+            color: #00e676;
+            font-size: clamp(18px, 3.2vh, 36px);
+            text-shadow: 0 0 15px rgba(0,230,118,0.3);
+        }
+        .marquee-content.scroll {
+            /* วิ่งไปซ้ายแล้วเด้งกลับ (Ping-pong) เพื่อให้อ่านง่าย */
+            animation: scroll-left 6s linear infinite alternate;
+        }
+        @keyframes scroll-left {
+            0%, 15% { transform: translateX(0); }
+            85%, 100% { transform: translateX(var(--scroll-dist)); }
+        }
 
-        /* หน้าแรกก่อนเริ่มระบบ */
         #view-start { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .start-text { color:#aaa; text-align:center; font-size: 2.5vh; line-height: 1.6; margin-bottom: 4vh; }
         .btn-huge { background: linear-gradient(135deg, #00c853 0%, #00e676 100%); color: #000; border: none; width: 100%; padding: 2.5vh; font-size: 3vh; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 10px 30px rgba(0,230,118,0.4); flex-shrink: 0;}
         
-        /* 4. กล่อง Log (ล็อกขนาดคงที่ล่างสุด) */
-        #log { font-size: 11px; color: #555; height: 5vh; overflow-y: scroll; background: #050505; padding: 1vh 2vw; border-top: 1px solid #111; flex-shrink: 0; }
+        #log { font-size: 11px; color: #555; height: 5vh; overflow-y: scroll; background: #050505; padding: 1vh 2vw; border-top: 1px solid #111; flex-shrink: 0; z-index: 10; }
     </style>
 </head>
 <body>
@@ -95,7 +116,9 @@
             <div class="bus-info-card">
                 <div class="info-row">
                     <div class="info-label" id="ui-route-label">สายรถ:</div>
-                    <div class="info-value highlight" id="bus-route-name">กำลังค้นหา...</div>
+                    <div class="info-value marquee-container" id="route-wrapper">
+                        <div id="bus-route-name" class="marquee-content">กำลังค้นหา...</div>
+                    </div>
                 </div>
                 <div class="info-row">
                     <div class="info-label" id="ui-car-label">เบอร์รถ:</div>
@@ -125,6 +148,7 @@
         const CHECK_INTERVAL = 30000; 
         const WELCOME_INTERVAL = 300000; 
         const AVERAGE_SPEED_KMH = 15; 
+        const ALERT_MINUTES = 2; // 🎯 กำหนดเวลาให้จอกระพริบ (เมื่อรถอยู่ห่าง <= 2 นาที)
 
         const uiText = {
             TH: { stop: "📍 ป้าย: เซ็นทรัลพลาซ่า ขอนแก่น", etaLabel: "รถจะถึงในอีก", etaUnit: "นาที", routeLabel: "สายรถ:", carLabel: "เบอร์รถ:", distLabel: "ระยะทาง:", distUnit: "กม.", searching: "กำลังค้นหา..." },
@@ -136,6 +160,26 @@
             const logDiv = document.getElementById('log');
             logDiv.innerHTML += `<div>> ${msg}</div>`;
             logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // 🎯 ฟังก์ชันจัดการตัวหนังสือวิ่งอัตโนมัติ
+        function updateRouteNameMarquee(text) {
+            const container = document.getElementById('route-wrapper');
+            const content = document.getElementById('bus-route-name');
+            content.innerText = text;
+
+            // ล้างสถานะวิ่งเก่าออกก่อน
+            content.classList.remove('scroll');
+            
+            // รอให้เบราว์เซอร์จัด Layout แป๊บนึง แล้วเช็คว่าข้อความล้นกล่องไหม
+            setTimeout(() => {
+                if (content.scrollWidth > container.clientWidth) {
+                    const scrollDistance = container.clientWidth - content.scrollWidth;
+                    // ล็อกระยะทางที่จะต้องเลื่อนไปซ้ายใน CSS Variable
+                    content.style.setProperty('--scroll-dist', `${scrollDistance}px`);
+                    content.classList.add('scroll'); // สั่งให้วิ่ง
+                }
+            }, 100);
         }
 
         function setUILanguage(lang) {
@@ -156,30 +200,21 @@
             document.getElementById('ui-dist-label').innerText = uiText[lang].distLabel;
             document.getElementById('ui-dist-unit').innerText = uiText[lang].distUnit;
             
-            if (document.getElementById('bus-route-name').innerText === uiText['TH'].searching || 
-                document.getElementById('bus-route-name').innerText === uiText['EN'].searching || 
-                document.getElementById('bus-route-name').innerText === uiText['CN'].searching) {
-                document.getElementById('bus-route-name').innerText = uiText[lang].searching;
+            const currentRouteText = document.getElementById('bus-route-name').innerText;
+            if (currentRouteText === uiText['TH'].searching || currentRouteText === uiText['EN'].searching || currentRouteText === uiText['CN'].searching) {
+                updateRouteNameMarquee(uiText[lang].searching);
             }
         }
 
-        function loadVoices() {
-            availableVoices = window.speechSynthesis.getVoices();
-        }
-
+        function loadVoices() { availableVoices = window.speechSynthesis.getVoices(); }
         if ('speechSynthesis' in window) {
             loadVoices();
-            if (window.speechSynthesis.onvoiceschanged !== undefined) {
-                window.speechSynthesis.onvoiceschanged = loadVoices;
-            }
+            if (window.speechSynthesis.onvoiceschanged !== undefined) window.speechSynthesis.onvoiceschanged = loadVoices;
         }
 
         function getBestVoiceForLang(langCode) {
             let voice = availableVoices.find(v => v.lang === langCode || v.lang === langCode.replace('-', '_'));
-            if (!voice) {
-                const prefix = langCode.split('-')[0];
-                voice = availableVoices.find(v => v.lang.startsWith(prefix));
-            }
+            if (!voice) voice = availableVoices.find(v => v.lang.startsWith(langCode.split('-')[0]));
             return voice;
         }
 
@@ -196,33 +231,23 @@
                 osc.start(startTime); osc.stop(startTime + duration);
             };
             const now = audioCtx.currentTime;
-            playNote(523.25, now, 0.8); 
-            playNote(392.00, now + 0.5, 0.8); 
+            playNote(523.25, now, 0.8); playNote(392.00, now + 0.5, 0.8); 
         }
 
         async function initApp() {
-            if ('speechSynthesis' in window) {
-                let silentUtterance = new SpeechSynthesisUtterance('');
-                window.speechSynthesis.speak(silentUtterance);
-            }
-
+            if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
             document.getElementById('view-start').style.display = 'none';
             document.getElementById('view-tracking').style.display = 'flex';
             document.getElementById('lang-menu').style.display = 'flex'; 
             
-            announceWelcome();
-            setInterval(announceWelcome, WELCOME_INTERVAL);
-
-            fetchAndCheckBus();
-            setInterval(fetchAndCheckBus, CHECK_INTERVAL);
+            announceWelcome(); setInterval(announceWelcome, WELCOME_INTERVAL);
+            fetchAndCheckBus(); setInterval(fetchAndCheckBus, CHECK_INTERVAL);
         }
 
         function announceWelcome() {
-            log("📢 ประกาศต้อนรับ (ข้อความใหม่)");
             const th = "สวัสดีขอนแก่น ผู้โดยสารขอนแก่นซิตี้บัส โปรดทราบ ขณะนี้ท่านอยู่ที่ป้าย เซ็นทรัลพลาซ่าขอนแก่น ท่านสามารถรอรถเพื่อเดินทางไปยังสนามบิน หรือข้ามถนนไปยังป้ายรถเมล์ฝั่งตรงข้าม เพื่อเดินทางไปสถานีขนส่งผู้โดยสารแห่งที่ 3 ระบบจะทำการแจ้งเตือนให้ทราบอีกครั้ง เมื่อรถใกล้เข้าจอด";
             const en = "Hello Khon Kaen. Attention Khon Kaen City Bus passengers. You are currently at the Central Plaza Khon Kaen stop. You can wait here for the bus to the airport, or cross the street to the opposite bus stop to travel to Passenger Terminal 3. The system will notify you again when the bus is approaching.";
             const cn = "你好，孔敬。孔敬城市巴士的乘客请注意，您现在位于孔敬中央广场站。您可以在此等候前往机场的巴士，或过马路到对面的公交站乘车前往三号客运站。当巴士快到时，系统会再次通知您。";
-
             speakAlertMultiLang(th, en, cn, true);
         }
 
@@ -246,10 +271,19 @@
                     let etaMinutes = Math.round((minDistance / AVERAGE_SPEED_KMH) * 60);
                     if (etaMinutes <= 0 && minDistance > 0) etaMinutes = 1;
 
-                    document.getElementById('bus-route-name').innerText = closestBus.gps_route_name.split(':')[0]; 
+                    // 🎯 อัปเดตชื่อรถ (ใช้ชื่อเต็มแล้วโยนเข้าฟังก์ชันตรวจสอบการวิ่ง)
+                    updateRouteNameMarquee(closestBus.gps_route_name);
+                    
                     document.getElementById('bus-car-id').innerText = closestBus.gps_car_id;
                     document.getElementById('eta-mins').innerText = etaMinutes;
                     document.getElementById('distance-km').innerText = minDistance.toFixed(2);
+                    
+                    // 🎯 ระบบกระพริบจอเมื่อรถใกล้มาถึง (<= 2 นาที)
+                    if (etaMinutes <= ALERT_MINUTES) {
+                        document.body.classList.add('flash-green');
+                    } else {
+                        document.body.classList.remove('flash-green');
+                    }
                     
                     const speechLevels = [10, 5, 2, 1];
                     if (isFirstCalculation || (speechLevels.includes(etaMinutes) && etaMinutes !== lastSpokenEta)) {
@@ -265,10 +299,11 @@
                         isFirstCalculation = false; 
                     }
                 } else {
-                    document.getElementById('bus-route-name').innerText = uiText[currentLang].searching;
+                    updateRouteNameMarquee(uiText[currentLang].searching);
                     document.getElementById('bus-car-id').innerText = "--";
                     document.getElementById('eta-mins').innerText = "-";
                     document.getElementById('distance-km').innerText = "-.-";
+                    document.body.classList.remove('flash-green');
                 }
             } catch (err) { log("Error: " + err.message); }
         }
@@ -276,27 +311,18 @@
         function speakAlertMultiLang(th, en, cn, isWelcome) {
             if ('speechSynthesis' in window) {
                 if (!isWelcome) window.speechSynthesis.cancel(); 
-
                 playChime();
-
                 setTimeout(() => {
                     const utterances = [
                         { text: th, langCode: 'th-TH', pitch: 1.1, rate: 1.0 }, 
                         { text: en, langCode: 'en-US', pitch: 1.0, rate: 0.9 },
                         { text: cn, langCode: 'zh-CN', pitch: 1.0, rate: 0.9 }
                     ];
-
                     utterances.forEach(item => {
                         let msg = new SpeechSynthesisUtterance(item.text);
-                        msg.lang = item.langCode;
-                        msg.pitch = item.pitch;
-                        msg.rate = item.rate;
-                        
+                        msg.lang = item.langCode; msg.pitch = item.pitch; msg.rate = item.rate;
                         const specificVoice = getBestVoiceForLang(item.langCode);
-                        if (specificVoice) {
-                            msg.voice = specificVoice;
-                        }
-
+                        if (specificVoice) msg.voice = specificVoice;
                         window.speechSynthesis.speak(msg);
                     });
                 }, 1200);
@@ -304,9 +330,7 @@
         }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         }
