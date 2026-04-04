@@ -3,54 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bus Alert - Khon Kaen City Bus</title>
+    <title>Bus Alert - Khon Kaen City Bus (1080x1920)</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { 
-            background-color: #000000; color: #FFFFFF; height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+            background-color: #000000; color: #FFFFFF; height: 100vh; width: 100vw; display: flex; flex-direction: column; overflow: hidden;
         }
         
-        .app-container { flex: 1; display: flex; flex-direction: column; padding: 20px 15px; }
+        .app-container { flex: 1; display: flex; flex-direction: column; padding: 3vh 4vw; max-width: 1080px; margin: 0 auto; width: 100%; }
         
         /* ส่วนหัวและโลโก้ */
-        header { text-align: center; margin-bottom: 15px; }
-        .logo { width: 60%; max-width: 250px; height: auto; margin: 0 auto 10px auto; display: block; }
-        .stop-status { font-size: 14px; color: #00e676; font-weight: bold; background: #111; padding: 8px 15px; border-radius: 50px; display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;}
+        header { text-align: center; margin-bottom: 2vh; }
+        .logo { width: auto; max-width: 60%; height: 10vh; margin: 0 auto 2vh auto; display: block; object-fit: contain; }
+        .stop-status { font-size: 2.5vh; color: #00e676; font-weight: bold; background: #111; padding: 1.5vh 3vw; border-radius: 50px; display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; box-shadow: 0 4px 15px rgba(0,230,118,0.1);}
 
         /* เมนูสลับภาษา */
-        .lang-switcher { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; display: none; }
-        .lang-btn { flex: 1; padding: 12px; background: #222; color: #aaa; border: 2px solid #333; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .lang-btn.active { background: #00e676; color: #000; border-color: #00c853; }
+        .lang-switcher { display: flex; justify-content: center; gap: 2vw; margin-bottom: 3vh; display: none; }
+        .lang-btn { flex: 1; padding: 2vh; background: #222; color: #aaa; border: 3px solid #333; border-radius: 20px; font-size: 2.5vh; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .lang-btn.active { background: #00e676; color: #000; border-color: #00c853; box-shadow: 0 5px 15px rgba(0,230,118,0.3); }
 
-        /* ส่วนแสดงผลหลัก (เน้นตัวใหญ่) */
+        /* ส่วนแสดงผลหลัก */
         .main-display { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; width: 100%; }
         
-        .eta-container { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
-        .eta-label { color: #aaa; font-size: 5vw; min-font-size: 18px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: -10px; }
-        /* ตัวเลขนาทีใหญ่ตะโกน */
-        .eta-value { font-size: 45vw; font-weight: 900; color: #FFFFFF; line-height: 1; text-shadow: 0 10px 30px rgba(0,230,118,0.4); margin: 10px 0; }
-        .eta-unit { color: #00e676; font-size: 8vw; font-weight: bold; margin-top: -10px; }
+        .eta-container { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; margin-bottom: 2vh; }
+        .eta-label { color: #aaa; font-size: 4vh; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0; }
+        
+        /* ตัวเลขนาที - ใหญ่สุดๆ ตามสัดส่วนจอ */
+        .eta-value { font-size: 32vh; font-weight: 900; color: #FFFFFF; line-height: 1; text-shadow: 0 10px 40px rgba(0,230,118,0.4); margin: 1vh 0; }
+        .eta-unit { color: #00e676; font-size: 6vh; font-weight: bold; margin-top: 0; }
 
-        /* การ์ดข้อมูลรถด้านล่าง */
-        .bus-info-card { background: linear-gradient(145deg, #1a1a1a, #111); width: 100%; border-radius: 20px; padding: 20px; margin-bottom: 10px; border: 1px solid #333; display: flex; flex-direction: column; gap: 10px; }
-        .info-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 10px; }
+        /* การ์ดข้อมูลรถด้านล่าง (ใหญ่และอ่านง่ายขึ้นมาก) */
+        .bus-info-card { background: linear-gradient(145deg, #1a1a1a, #111); width: 100%; border-radius: 40px; padding: 4vh 5vw; margin-bottom: 2vh; border: 2px solid #333; display: flex; flex-direction: column; gap: 3vh; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .info-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2a2a2a; padding-bottom: 2.5vh; }
         .info-row:last-child { border-bottom: none; padding-bottom: 0; }
-        .info-label { color: #888; font-size: 16px; }
-        .info-value { color: #fff; font-size: 20px; font-weight: bold; }
-        .info-value.highlight { color: #00e676; font-size: 24px; }
+        
+        /* ขนาดตัวอักษรข้อมูล */
+        .info-label { color: #888; font-size: 3.5vh; font-weight: 500; }
+        .info-value { color: #fff; font-size: 4vh; font-weight: bold; }
+        .info-value.highlight { color: #00e676; font-size: 4.5vh; text-shadow: 0 0 15px rgba(0,230,118,0.3); }
 
-        /* ปุ่มเริ่มต้น */
+        /* หน้าแรกก่อนเริ่มระบบ */
         #view-start { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .btn-huge { background: linear-gradient(135deg, #00c853 0%, #00e676 100%); color: #000; border: none; width: 100%; padding: 22px; font-size: 20px; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 10px 20px rgba(0,230,118,0.3); }
+        .start-text { color:#aaa; text-align:center; font-size: 3vh; line-height: 1.6; margin-bottom: 5vh; }
+        .btn-huge { background: linear-gradient(135deg, #00c853 0%, #00e676 100%); color: #000; border: none; width: 100%; padding: 3vh; font-size: 3.5vh; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 10px 30px rgba(0,230,118,0.4); }
         
-        #log { font-size: 11px; color: #666; height: 50px; overflow-y: scroll; background: #050505; padding: 5px 10px; border-top: 1px solid #111; }
-        
-        /* Responsive สำหรับจอแนวนอนหรือจอใหญ่ */
-        @media (min-width: 600px) {
-            .eta-value { font-size: 250px; }
-            .eta-label { font-size: 24px; }
-            .eta-unit { font-size: 40px; }
-        }
+        #log { font-size: 1.5vh; color: #666; height: 6vh; overflow-y: scroll; background: #050505; padding: 1vh 2vw; border-top: 1px solid #111; }
     </style>
 </head>
 <body>
@@ -58,7 +55,7 @@
     <div class="app-container">
         <header>
             <img src="bussing.png" alt="BUSSING TRANSIT" class="logo" onerror="this.style.display='none'; document.getElementById('alt-logo').style.display='block';">
-            <h1 id="alt-logo" style="display:none; font-size: 30px; color: #ff007f;">BUSSING<span style="color:#00e676">TRANSIT</span></h1>
+            <h1 id="alt-logo" style="display:none; font-size: 5vh; color: #ff007f; margin-bottom: 2vh;">BUSSING<span style="color:#00e676">TRANSIT</span></h1>
             <div class="stop-status" id="ui-stop-name">📍 ป้าย: เซ็นทรัลพลาซ่า ขอนแก่น</div>
         </header>
 
@@ -69,7 +66,7 @@
         </div>
 
         <div id="view-start">
-            <p style="color:#aaa; text-align:center; font-size: 18px; line-height: 1.6; margin-bottom: 30px;">
+            <p class="start-text">
                 ระบบแจ้งเตือนป้ายรถเมล์อัจฉริยะ<br>กำลังโหลดชุดเสียงบนอุปกรณ์ของคุณ...
             </p>
             <button id="start-btn" class="btn-huge" onclick="initApp()">🔊 เริ่มระบบประกาศสาธารณะ</button>
@@ -109,14 +106,13 @@
         let isFirstCalculation = true;
         let audioCtx = null;
         let availableVoices = [];
-        let currentLang = 'TH'; // ภาษาเริ่มต้นของหน้าจอ
+        let currentLang = 'TH'; 
 
         const API_URL = 'https://public.bussing.app/gps-current/7';
         const CHECK_INTERVAL = 30000; 
         const WELCOME_INTERVAL = 300000; 
         const AVERAGE_SPEED_KMH = 15; 
 
-        // 🎯 ดิกชันนารีสำหรับเปลี่ยนข้อความบนหน้าจอ UI
         const uiText = {
             TH: { stop: "📍 ป้าย: เซ็นทรัลพลาซ่า ขอนแก่น", etaLabel: "รถจะถึงในอีก", etaUnit: "นาที", routeLabel: "สายรถ:", carLabel: "เบอร์รถ:", distLabel: "ระยะทาง:", distUnit: "กม.", searching: "กำลังค้นหา..." },
             EN: { stop: "📍 Stop: Central Plaza Khon Kaen", etaLabel: "Arriving in", etaUnit: "Mins", routeLabel: "Route:", carLabel: "Bus No:", distLabel: "Distance:", distUnit: "km", searching: "Searching..." },
@@ -129,11 +125,9 @@
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 
-        // 🎯 ฟังก์ชันสลับภาษาบนหน้าจอ (ไม่กระทบเสียงพูด)
         function setUILanguage(lang) {
             currentLang = lang;
             
-            // เปลี่ยนสีปุ่มเมนู
             document.querySelectorAll('.lang-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.innerText === lang || (lang === 'CN' && btn.innerText === '中文')) {
@@ -141,7 +135,6 @@
                 }
             });
 
-            // เปลี่ยนข้อความบนจอ
             document.getElementById('ui-stop-name').innerText = uiText[lang].stop;
             document.getElementById('ui-eta-label').innerText = uiText[lang].etaLabel;
             document.getElementById('ui-eta-unit').innerText = uiText[lang].etaUnit;
@@ -202,7 +195,7 @@
 
             document.getElementById('view-start').style.display = 'none';
             document.getElementById('view-tracking').style.display = 'flex';
-            document.getElementById('lang-menu').style.display = 'flex'; // แสดงเมนูภาษา
+            document.getElementById('lang-menu').style.display = 'flex'; 
             
             announceWelcome();
             setInterval(announceWelcome, WELCOME_INTERVAL);
@@ -213,7 +206,6 @@
 
         function announceWelcome() {
             log("📢 ประกาศต้อนรับ (ข้อความใหม่)");
-            // 🎯 อัปเดตข้อความต้อนรับใหม่ ตามที่ลูกค้าระบุ
             const th = "สวัสดีขอนแก่น ผู้โดยสารขอนแก่นซิตี้บัส โปรดทราบ ขณะนี้ท่านอยู่ที่ป้าย เซ็นทรัลพลาซ่าขอนแก่น ท่านสามารถรอรถเพื่อเดินทางไปยังสนามบิน หรือข้ามถนนไปยังป้ายรถเมล์ฝั่งตรงข้าม เพื่อเดินทางไปสถานีขนส่งผู้โดยสารแห่งที่ 3 ระบบจะทำการแจ้งเตือนให้ทราบอีกครั้ง เมื่อรถใกล้เข้าจอด";
             const en = "Hello Khon Kaen. Attention Khon Kaen City Bus passengers. You are currently at the Central Plaza Khon Kaen stop. You can wait here for the bus to the airport, or cross the street to the opposite bus stop to travel to Passenger Terminal 3. The system will notify you again when the bus is approaching.";
             const cn = "你好，孔敬。孔敬城市巴士的乘客请注意，您现在位于孔敬中央广场站。您可以在此等候前往机场的巴士，或过马路到对面的公交站乘车前往三号客运站。当巴士快到时，系统会再次通知您。";
@@ -241,8 +233,7 @@
                     let etaMinutes = Math.round((minDistance / AVERAGE_SPEED_KMH) * 60);
                     if (etaMinutes <= 0 && minDistance > 0) etaMinutes = 1;
 
-                    // อัปเดตข้อมูลรถ
-                    document.getElementById('bus-route-name').innerText = closestBus.gps_route_name.split(':')[0]; // ตัดให้สั้นลง
+                    document.getElementById('bus-route-name').innerText = closestBus.gps_route_name.split(':')[0]; 
                     document.getElementById('bus-car-id').innerText = closestBus.gps_car_id;
                     document.getElementById('eta-mins').innerText = etaMinutes;
                     document.getElementById('distance-km').innerText = minDistance.toFixed(2);
