@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bus Alert - Khon Kaen City Bus (Chakra Petch)</title>
+    <title>Bus Alert - Khon Kaen City Bus (Sleep Mode)</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* บังคับใช้ฟอนต์ Chakra Petch ทั้งหน้าจอ */
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; font-family: 'Chakra Petch', sans-serif; }
         
         body { 
@@ -19,9 +18,7 @@
             width: 100vw; display: flex; flex-direction: column; overflow: hidden;
             transition: background-color 0.5s;
         }
-        body.flash-green {
-            animation: alert-flash 1.5s infinite;
-        }
+        body.flash-green { animation: alert-flash 1.5s infinite; }
         @keyframes alert-flash {
             0% { background-color: #000000; }
             50% { background-color: #004d1a; }
@@ -61,21 +58,9 @@
         .info-label { color: #888; font-size: clamp(14px, 2.5vh, 26px); font-weight: 600; white-space: nowrap; flex-shrink: 0; margin-right: 15px;}
         .info-value { color: #fff; font-size: clamp(16px, 2.8vh, 30px); font-weight: 700; text-align: right; }
         
-        .marquee-container {
-            max-width: 65%;
-            overflow: hidden;
-            white-space: nowrap;
-        }
-        .marquee-content {
-            display: inline-block;
-            color: #00e676;
-            font-size: clamp(18px, 3.2vh, 36px);
-            font-weight: 700;
-            text-shadow: 0 0 15px rgba(0,230,118,0.3);
-        }
-        .marquee-content.scroll {
-            animation: scroll-left 6s linear infinite alternate;
-        }
+        .marquee-container { max-width: 65%; overflow: hidden; white-space: nowrap; }
+        .marquee-content { display: inline-block; color: #00e676; font-size: clamp(18px, 3.2vh, 36px); font-weight: 700; text-shadow: 0 0 15px rgba(0,230,118,0.3); }
+        .marquee-content.scroll { animation: scroll-left 6s linear infinite alternate; }
         @keyframes scroll-left {
             0%, 15% { transform: translateX(0); }
             85%, 100% { transform: translateX(var(--scroll-dist)); }
@@ -85,6 +70,12 @@
         .start-text { color:#aaa; text-align:center; font-size: 2.5vh; line-height: 1.6; margin-bottom: 4vh; font-weight: 500;}
         .btn-huge { background: linear-gradient(135deg, #00c853 0%, #00e676 100%); color: #000; border: none; width: 100%; padding: 2.5vh; font-size: 3vh; font-weight: 700; border-radius: 50px; cursor: pointer; box-shadow: 0 10px 30px rgba(0,230,118,0.4); flex-shrink: 0;}
         
+        /* หน้าจอโหมดพัก (Sleep Mode) */
+        #view-sleep { flex: 1; display: none; flex-direction: column; justify-content: center; align-items: center; }
+        .sleep-icon { font-size: clamp(60px, 15vh, 150px); margin-bottom: 2vh; text-shadow: 0 0 30px rgba(255,255,255,0.2); }
+        .sleep-title { color: #fff; font-size: clamp(24px, 4vh, 45px); font-weight: 700; letter-spacing: 2px; }
+        .sleep-subtitle { color: #00e676; font-size: clamp(16px, 2.5vh, 30px); margin-top: 1vh; font-weight: 500; }
+
         #log { font-size: 11px; color: #555; height: 5vh; overflow-y: scroll; background: #050505; padding: 1vh 2vw; border-top: 1px solid #111; flex-shrink: 0; z-index: 10; font-weight: 400;}
     </style>
 </head>
@@ -108,6 +99,12 @@
                 ระบบแจ้งเตือนป้ายรถเมล์อัจฉริยะ<br>กำลังโหลดชุดเสียงบนอุปกรณ์ของคุณ...
             </p>
             <button id="start-btn" class="btn-huge" onclick="initApp()">🔊 เริ่มระบบประกาศสาธารณะ</button>
+        </div>
+
+        <div id="view-sleep">
+            <div class="sleep-icon">🌙</div>
+            <div class="sleep-title" id="ui-sleep-title">นอกเวลาให้บริการ</div>
+            <div class="sleep-subtitle" id="ui-sleep-time">( 20:00 - 05:00 น. )</div>
         </div>
 
         <div id="view-tracking" class="main-display" style="display:none;">
@@ -147,6 +144,7 @@
         let audioCtx = null;
         let availableVoices = [];
         let currentLang = 'TH'; 
+        let appStarted = false; // ตัวแปรเช็คว่ากดเริ่มระบบไปหรือยัง
 
         const API_URL = 'https://public.bussing.app/gps-current/7';
         const CHECK_INTERVAL = 30000; 
@@ -155,15 +153,21 @@
         const ALERT_MINUTES = 2; 
 
         const uiText = {
-            TH: { stop: "📍 ป้าย: เซ็นทรัลพลาซ่า ขอนแก่น", etaLabel: "รถจะถึงในอีก", etaUnit: "นาที", routeLabel: "สายรถ:", carLabel: "เบอร์รถ:", distLabel: "ระยะทาง:", distUnit: "กม.", searching: "กำลังค้นหา..." },
-            EN: { stop: "📍 Stop: Central Plaza Khon Kaen", etaLabel: "Arriving in", etaUnit: "Mins", routeLabel: "Route:", carLabel: "Bus No:", distLabel: "Distance:", distUnit: "km", searching: "Searching..." },
-            CN: { stop: "📍 站点: 孔敬中央广场", etaLabel: "即将到达", etaUnit: "分钟", routeLabel: "路线:", carLabel: "车号:", distLabel: "距离:", distUnit: "公里", searching: "搜索中..." }
+            TH: { stop: "📍 ป้าย: เซ็นทรัลพลาซ่า ขอนแก่น", etaLabel: "รถจะถึงในอีก", etaUnit: "นาที", routeLabel: "สายรถ:", carLabel: "เบอร์รถ:", distLabel: "ระยะทาง:", distUnit: "กม.", searching: "กำลังค้นหา...", sleepTitle: "นอกเวลาให้บริการ" },
+            EN: { stop: "📍 Stop: Central Plaza Khon Kaen", etaLabel: "Arriving in", etaUnit: "Mins", routeLabel: "Route:", carLabel: "Bus No:", distLabel: "Distance:", distUnit: "km", searching: "Searching...", sleepTitle: "Out of Service" },
+            CN: { stop: "📍 站点: 孔敬中央广场", etaLabel: "即将到达", etaUnit: "分钟", routeLabel: "路线:", carLabel: "车号:", distLabel: "距离:", distUnit: "公里", searching: "搜索中...", sleepTitle: "非营业时间" }
         };
 
         function log(msg) {
             const logDiv = document.getElementById('log');
             logDiv.innerHTML += `<div>> ${msg}</div>`;
             logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // 🎯 ฟังก์ชันตรวจสอบเวลา (โหมดพัก 20:00 - 04:59)
+        function isSleepMode() {
+            const hour = new Date().getHours();
+            return (hour >= 20 || hour < 5);
         }
 
         function updateRouteNameMarquee(text) {
@@ -198,6 +202,7 @@
             document.getElementById('ui-car-label').innerText = uiText[lang].carLabel;
             document.getElementById('ui-dist-label').innerText = uiText[lang].distLabel;
             document.getElementById('ui-dist-unit').innerText = uiText[lang].distUnit;
+            document.getElementById('ui-sleep-title').innerText = uiText[lang].sleepTitle;
             
             const currentRouteText = document.getElementById('bus-route-name').innerText;
             if (currentRouteText === uiText['TH'].searching || currentRouteText === uiText['EN'].searching || currentRouteText === uiText['CN'].searching) {
@@ -235,15 +240,30 @@
 
         async function initApp() {
             if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
-            document.getElementById('view-start').style.display = 'none';
-            document.getElementById('view-tracking').style.display = 'flex';
-            document.getElementById('lang-menu').style.display = 'flex'; 
             
-            announceWelcome(); setInterval(announceWelcome, WELCOME_INTERVAL);
-            fetchAndCheckBus(); setInterval(fetchAndCheckBus, CHECK_INTERVAL);
+            document.getElementById('view-start').style.display = 'none';
+            document.getElementById('lang-menu').style.display = 'flex'; 
+            appStarted = true;
+
+            // ตรวจสอบโหมดพักทันทีที่กดเริ่ม
+            if (isSleepMode()) {
+                document.getElementById('view-sleep').style.display = 'flex';
+                document.getElementById('view-tracking').style.display = 'none';
+                log("🌙 เข้าสู่โหมดพัก (20:00 - 05:00)");
+            } else {
+                document.getElementById('view-sleep').style.display = 'none';
+                document.getElementById('view-tracking').style.display = 'flex';
+                announceWelcome(); 
+            }
+            
+            setInterval(announceWelcome, WELCOME_INTERVAL);
+            fetchAndCheckBus(); 
+            setInterval(fetchAndCheckBus, CHECK_INTERVAL);
         }
 
         function announceWelcome() {
+            if (isSleepMode()) return; // 🛑 หยุดประกาศเสียงถ้าอยู่ในโหมดพัก
+            
             const th = "สวัสดีขอนแก่น ผู้โดยสารขอนแก่นซิตี้บัส โปรดทราบ ขณะนี้ท่านอยู่ที่ป้าย เซ็นทรัลพลาซ่าขอนแก่น ท่านสามารถรอรถเพื่อเดินทางไปยังสนามบิน หรือข้ามถนนไปยังป้ายรถเมล์ฝั่งตรงข้าม เพื่อเดินทางไปสถานีขนส่งผู้โดยสารแห่งที่ 3 ระบบจะทำการแจ้งเตือนให้ทราบอีกครั้ง เมื่อรถใกล้เข้าจอด";
             const en = "Hello Khon Kaen. Attention Khon Kaen City Bus passengers. You are currently at the Central Plaza Khon Kaen stop. You can wait here for the bus to the airport, or cross the street to the opposite bus stop to travel to Passenger Terminal 3. The system will notify you again when the bus is approaching.";
             const cn = "你好，孔敬。孔敬城市巴士的乘客请注意，您现在位于孔敬中央广场站。您可以在此等候前往机场的巴士，或过马路到对面的公交站乘车前往三号客运站。当巴士快到时，系统会再次通知您。";
@@ -251,6 +271,24 @@
         }
 
         async function fetchAndCheckBus() {
+            // 🛑 เช็คโหมดพักก่อนทำงาน
+            if (isSleepMode()) {
+                if (appStarted) {
+                    document.getElementById('view-tracking').style.display = 'none';
+                    document.getElementById('view-sleep').style.display = 'flex';
+                    document.body.classList.remove('flash-green'); // ปิดไฟกระพริบ
+                }
+                return; // จบการทำงานฟังก์ชัน ไม่ดึง API ต่อ
+            } else {
+                // ถ้าอยู่นอกเวลาพัก ให้เปิดหน้าจอกลับมา
+                if (appStarted && document.getElementById('view-sleep').style.display === 'flex') {
+                    document.getElementById('view-sleep').style.display = 'none';
+                    document.getElementById('view-tracking').style.display = 'flex';
+                    isFirstCalculation = true; // รีเซ็ตการแจ้งเตือนเสียง
+                    log("☀️ ระบบกลับมาทำงาน (05:00)");
+                }
+            }
+
             try {
                 const cacheBuster = '?t=' + new Date().getTime();
                 const freshProxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(API_URL + cacheBuster);
