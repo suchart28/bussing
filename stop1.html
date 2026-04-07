@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bus Alert - Khon Kaen City Bus (Multi-Language + Tracking)</title>
+    <title>Bus Alert - Khon Kaen City Bus (Auto Translate Route)</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -139,7 +139,8 @@
         let availableVoices = [];
         let currentLang = 'TH'; 
         let appStarted = false; 
-
+        
+        let currentRawRouteName = ""; // เก็บชื่อสายรถเมล์ดิบๆ จาก API
         let busTracker = {}; 
 
         const API_URL = 'https://public.bussing.app/gps-current/7';
@@ -149,13 +150,38 @@
         const ALERT_MINUTES = 2; 
         const GPS_BUFFER_KM = 0.05; 
 
-        // 🎯 เพิ่มชุดแปลภาษาลาว
         const uiText = {
             TH: { stop: "📍 ป้าย: เซ็นทรัลพลาซ่า ขอนแก่น", etaLabel: "รถจะถึงในอีก", etaUnit: "นาที", routeLabel: "สายรถ:", carLabel: "เบอร์รถ:", distLabel: "ระยะทาง:", distUnit: "กม.", searching: "กำลังค้นหา...", sleepTitle: "นอกเวลาให้บริการ" },
             EN: { stop: "📍 Stop: Central Plaza Khon Kaen", etaLabel: "Arriving in", etaUnit: "Mins", routeLabel: "Route:", carLabel: "Bus No:", distLabel: "Distance:", distUnit: "km", searching: "Searching...", sleepTitle: "Out of Service" },
             CN: { stop: "📍 站点: 孔敬中央广场", etaLabel: "即将到达", etaUnit: "分钟", routeLabel: "路线:", carLabel: "车号:", distLabel: "距离:", distUnit: "公里", searching: "搜索中...", sleepTitle: "非营业时间" },
             LA: { stop: "📍 ປ້າຍ: ເຊັນໂທຣພລາຊາ ຂອນແກ່ນ", etaLabel: "ລົດຈະມາຮອດໃນອີກ", etaUnit: "ນາທີ", routeLabel: "ສາຍລົດ:", carLabel: "ເບີລົດ:", distLabel: "ໄລຍະທາງ:", distUnit: "ກມ.", searching: "ກຳລັງຊອກຫາ...", sleepTitle: "ນອກເວລາໃຫ້ບໍລິການ" }
         };
+
+        // 🎯 พจนานุกรมแปลชื่อสายรถเมล์ (อิงจากคำที่มักพบบ่อยใน ขอนแก่นซิตี้บัส)
+        const routeDict = {
+            "สาย": { EN: "Route ", CN: "路线 ", LA: "ສາຍ " },
+            "สนามบิน": { EN: "Airport", CN: "机场", LA: "ສະໜາມບິນ" },
+            "บขส.3": { EN: "Terminal 3", CN: "3号客运站", LA: "ບຂສ.3" },
+            "บขส.": { EN: "Bus Terminal ", CN: "客运站 ", LA: "ບຂສ." },
+            "มข.": { EN: "KKU", CN: "孔敬大学", LA: "ມ.ຂອນແກ່ນ" },
+            "มหาวิทยาลัยขอนแก่น": { EN: "Khon Kaen Univ.", CN: "孔敬大学", LA: "ມະຫາວິທະຍາໄລຂອນແກ່ນ" },
+            "เซ็นทรัล": { EN: "Central", CN: "中央广场", LA: "ເຊັນໂທຣ" }
+        };
+
+        // 🎯 ฟังก์ชันแปลชื่อสาย
+        function translateRouteName(rawName, lang) {
+            if (!rawName) return uiText[lang].searching;
+            if (lang === 'TH') return rawName; // ถ้าเป็นภาษาไทย ให้ใช้ข้อมูลดิบเลย
+
+            let translated = rawName;
+            // วนลูปแทนที่คำภาษาไทย ด้วยคำในภาษาที่เลือก
+            for (const [thWord, translations] of Object.entries(routeDict)) {
+                // สร้าง Regex แบบยืดหยุ่น เพื่อทับคำเดิม
+                const regex = new RegExp(thWord, "gi"); 
+                translated = translated.replace(regex, translations[lang]);
+            }
+            return translated;
+        }
 
         function log(msg) {
             const logDiv = document.getElementById('log');
@@ -198,8 +224,11 @@
             document.getElementById('ui-dist-label').innerText = uiText[lang].distLabel;
             document.getElementById('ui-dist-unit').innerText = uiText[lang].distUnit;
             document.getElementById('ui-sleep-title').innerText = uiText[lang].sleepTitle;
-            const currentRouteText = document.getElementById('bus-route-name').innerText;
-            if ([uiText['TH'].searching, uiText['EN'].searching, uiText['CN'].searching, uiText['LA'].searching].includes(currentRouteText)) {
+            
+            // 🎯 แปลชื่อสายรถเมล์ที่ค้างอยู่บนหน้าจอทันทีเมื่อเปลี่ยนภาษา
+            if (currentRawRouteName) {
+                updateRouteNameMarquee(translateRouteName(currentRawRouteName, lang));
+            } else {
                 updateRouteNameMarquee(uiText[lang].searching);
             }
         }
@@ -249,7 +278,6 @@
             const th = "สวัสดีขอนแก่น ผู้โดยสารขอนแก่นซิตี้บัส โปรดทราบ ขณะนี้ท่านอยู่ที่ป้าย เซ็นทรัลพลาซ่าขอนแก่น ท่านสามารถรอรถเพื่อเดินทางไปยังสนามบิน หรือข้ามถนนไปยังป้ายรถเมล์ฝั่งตรงข้าม เพื่อเดินทางไปสถานีขนส่งผู้โดยสารแห่งที่ 3 ระบบจะทำการแจ้งเตือนให้ทราบอีกครั้ง เมื่อรถใกล้เข้าจอด";
             const en = "Hello Khon Kaen. Attention Khon Kaen City Bus passengers. You are currently at the Central Plaza Khon Kaen stop. You can wait here for the bus to the airport, or cross the street to the opposite bus stop to travel to Passenger Terminal 3. The system will notify you again when the bus is approaching.";
             const cn = "你好，孔敬。孔敬城市巴士的乘客请注意，您现在位于孔敬中央广场站。您可以在此等候前往机场的巴士，或过马路到对面的公交站乘车前往三号客运站。当巴士快到时，系统会再次通知您。";
-            // 🎯 เพิ่มประโยคต้อนรับภาษาลาว
             const la = "ສະບາຍດີຂອນແກ່ນ ຜູ້ໂດຍສານຂອນແກ່ນຊິຕີ້ບັດ ໂປດຊາບ ຂະນະນີ້ທ່ານຢູ່ທີ່ປ້າຍ ເຊັນໂທຣພລາຊາຂອນແກ່ນ ທ່ານສາມາດລໍຖ້າລົດເພື່ອເດີນທາງໄປຍັງສະໜາມບິນ ຫຼືຂ້າມທາງໄປຍັງປ້າຍລົດເມຝັ່ງກົງກັນຂ້າມ ເພື່ອເດີນທາງໄປສະຖານີຂົນສົ່ງຜູ້ໂດຍສານແຫ່ງທີ 3 ລະບົບຈະທຳການແຈ້ງເຕືອນໃຫ້ຊາບອີກຄັ້ງ ເມື່ອລົດໃກ້ເຂົ້າຈອດ";
             speakAlertMultiLang(th, en, cn, la, true);
         }
@@ -303,7 +331,10 @@
                         let etaMinutes = Math.round((minDistance / AVERAGE_SPEED_KMH) * 60);
                         if (etaMinutes <= 0 && minDistance > 0) etaMinutes = 1;
 
-                        updateRouteNameMarquee(closestBus.gps_route_name);
+                        // 🎯 เก็บข้อมูลดิบ และอัปเดตหน้าจอผ่านฟังก์ชันแปล
+                        currentRawRouteName = closestBus.gps_route_name;
+                        updateRouteNameMarquee(translateRouteName(currentRawRouteName, currentLang));
+                        
                         document.getElementById('bus-car-id').innerText = closestBus.gps_car_id;
                         document.getElementById('eta-mins').innerText = etaMinutes;
                         document.getElementById('distance-km').innerText = minDistance.toFixed(2);
@@ -313,19 +344,20 @@
                         
                         const speechLevels = [10, 5, 2, 1];
                         if (isFirstCalculation || (speechLevels.includes(etaMinutes) && etaMinutes !== lastSpokenEta)) {
-                            const routeTextTH = closestBus.gps_route_name.split(':')[0]; 
-                            const carId = closestBus.gps_car_id;
+                            // 🎯 ดึงเฉพาะ "ตัวเลขสายรถ" ออกมา เพื่อให้การเรียงประโยคต่างชาติดูเป็นธรรมชาติ
+                            const routeNumMatch = currentRawRouteName.match(/\d+/);
+                            const routeNum = routeNumMatch ? routeNumMatch[0] : "";
                             
-                            // 🎯 ประกาศ 4 ภาษา
                             speakAlertMultiLang(
-                                `ผู้โดยสารโปรดทราบ รถเมล์สาย${routeTextTH} จะเข้าจอดในอีกประมาณ ${etaMinutes} นาที`, 
-                                `Attention, bus number ${carId} will arrive in approximately ${etaMinutes} minutes.`, 
-                                `请注意，${carId} 号公交车将在大约 ${etaMinutes} 分钟后到达。`,
-                                `ຜູ້ໂດຍສານໂປດຊາບ, ລົດເມສາຍ ${routeTextTH} ຈະເຂົ້າຈອດໃນອີກປະມານ ${etaMinutes} ນາທີ.`, 
+                                `ผู้โดยสารโปรดทราบ รถเมล์สาย ${routeNum} จะเข้าจอดในอีกประมาณ ${etaMinutes} นาที`, 
+                                `Attention, Route ${routeNum} will arrive in approximately ${etaMinutes} minutes.`, 
+                                `请注意，${routeNum} 号线将在大约 ${etaMinutes} 分钟后到达。`,
+                                `ຜູ້ໂດຍສານໂປດຊາບ, ລົດເມສາຍ ${routeNum} ຈະເຂົ້າຈອດໃນອີກປະມານ ${etaMinutes} ນາທີ.`, 
                             false);
                             lastSpokenEta = etaMinutes; isFirstCalculation = false; 
                         }
                     } else {
+                        currentRawRouteName = "";
                         updateRouteNameMarquee(uiText[currentLang].searching);
                         document.getElementById('bus-car-id').innerText = "--";
                         document.getElementById('eta-mins').innerText = "-";
@@ -333,6 +365,7 @@
                         document.body.classList.remove('flash-green');
                     }
                 } else {
+                    currentRawRouteName = "";
                     updateRouteNameMarquee(uiText[currentLang].searching);
                     document.getElementById('bus-car-id').innerText = "--";
                     document.getElementById('eta-mins').innerText = "-";
@@ -342,7 +375,6 @@
             } catch (err) { log("Error: " + err.message); }
         }
 
-        // 🎯 อัปเดตฟังก์ชันรับรอง 4 ภาษา
         function speakAlertMultiLang(th, en, cn, la, isWelcome) {
             if ('speechSynthesis' in window) {
                 if (!isWelcome) window.speechSynthesis.cancel(); 
@@ -352,7 +384,7 @@
                         { text: th, langCode: 'th-TH', pitch: 1.1, rate: 1.0 }, 
                         { text: en, langCode: 'en-US', pitch: 1.0, rate: 0.9 },
                         { text: cn, langCode: 'zh-CN', pitch: 1.0, rate: 0.9 },
-                        { text: la, langCode: 'lo-LA', pitch: 1.0, rate: 0.9 } // ภาษาลาว
+                        { text: la, langCode: 'lo-LA', pitch: 1.0, rate: 0.9 }
                     ];
                     
                     utterances.forEach(item => {
@@ -364,7 +396,6 @@
                             msg.voice = specificVoice;
                             window.speechSynthesis.speak(msg);
                         } else if (item.langCode !== 'lo-LA') { 
-                            // ถ้าหาเสียงลาวไม่เจอ ให้ข้ามไปเลย จะได้ไม่เอาเสียงภาษาอังกฤษมาพยายามอ่านลาว
                             window.speechSynthesis.speak(msg);
                         }
                     });
