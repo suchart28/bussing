@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bus Alert - Khon Kaen City Bus (Direction Tracking)</title>
+    <title>Bus Alert - Khon Kaen City Bus (Multi-Language + Tracking)</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,8 +35,8 @@
         .logo { width: auto; max-width: 60%; height: 8vh; margin: 0 auto 1.5vh auto; display: block; object-fit: contain; }
         .stop-status { font-size: clamp(14px, 2.2vh, 24px); color: #00e676; font-weight: 700; background: #111; padding: 1vh 4vw; border-radius: 50px; display: inline-block; box-shadow: 0 4px 15px rgba(0,230,118,0.1); width: auto;}
 
-        .lang-switcher { display: flex; justify-content: center; gap: 2vw; margin-bottom: 2vh; display: none; flex-shrink: 0; }
-        .lang-btn { flex: 1; padding: 1.5vh; background: #222; color: #aaa; border: 2px solid #333; border-radius: 15px; font-size: clamp(14px, 2vh, 22px); font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .lang-switcher { display: flex; justify-content: center; gap: 1.5vw; margin-bottom: 2vh; display: none; flex-shrink: 0; }
+        .lang-btn { flex: 1; padding: 1.5vh 0.5vw; background: #222; color: #aaa; border: 2px solid #333; border-radius: 12px; font-size: clamp(12px, 1.8vh, 20px); font-weight: 700; cursor: pointer; transition: 0.2s; }
         .lang-btn.active { background: #00e676; color: #000; border-color: #00c853; box-shadow: 0 5px 15px rgba(0,230,118,0.3); }
 
         .main-display { flex: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center; width: 100%; min-height: 0; }
@@ -87,6 +87,7 @@
             <button class="lang-btn active" onclick="setUILanguage('TH')">TH</button>
             <button class="lang-btn" onclick="setUILanguage('EN')">EN</button>
             <button class="lang-btn" onclick="setUILanguage('CN')">中文</button>
+            <button class="lang-btn" onclick="setUILanguage('LA')">ລາວ</button>
         </div>
 
         <div id="view-start">
@@ -139,7 +140,6 @@
         let currentLang = 'TH'; 
         let appStarted = false; 
 
-        // 🎯 ระบบ Tracking จดจำประวัติระยะทางของรถแต่ละคัน
         let busTracker = {}; 
 
         const API_URL = 'https://public.bussing.app/gps-current/7';
@@ -147,12 +147,14 @@
         const WELCOME_INTERVAL = 300000; 
         const AVERAGE_SPEED_KMH = 15; 
         const ALERT_MINUTES = 2; 
-        const GPS_BUFFER_KM = 0.05; // ค่าความคลาดเคลื่อน GPS 50 เมตร (ป้องกันพิกัดแกว่งตอนจอดติดไฟแดง)
+        const GPS_BUFFER_KM = 0.05; 
 
+        // 🎯 เพิ่มชุดแปลภาษาลาว
         const uiText = {
             TH: { stop: "📍 ป้าย: เซ็นทรัลพลาซ่า ขอนแก่น", etaLabel: "รถจะถึงในอีก", etaUnit: "นาที", routeLabel: "สายรถ:", carLabel: "เบอร์รถ:", distLabel: "ระยะทาง:", distUnit: "กม.", searching: "กำลังค้นหา...", sleepTitle: "นอกเวลาให้บริการ" },
             EN: { stop: "📍 Stop: Central Plaza Khon Kaen", etaLabel: "Arriving in", etaUnit: "Mins", routeLabel: "Route:", carLabel: "Bus No:", distLabel: "Distance:", distUnit: "km", searching: "Searching...", sleepTitle: "Out of Service" },
-            CN: { stop: "📍 站点: 孔敬中央广场", etaLabel: "即将到达", etaUnit: "分钟", routeLabel: "路线:", carLabel: "车号:", distLabel: "距离:", distUnit: "公里", searching: "搜索中...", sleepTitle: "非营业时间" }
+            CN: { stop: "📍 站点: 孔敬中央广场", etaLabel: "即将到达", etaUnit: "分钟", routeLabel: "路线:", carLabel: "车号:", distLabel: "距离:", distUnit: "公里", searching: "搜索中...", sleepTitle: "非营业时间" },
+            LA: { stop: "📍 ປ້າຍ: ເຊັນໂທຣພລາຊາ ຂອນແກ່ນ", etaLabel: "ລົດຈະມາຮອດໃນອີກ", etaUnit: "ນາທີ", routeLabel: "ສາຍລົດ:", carLabel: "ເບີລົດ:", distLabel: "ໄລຍະທາງ:", distUnit: "ກມ.", searching: "ກຳລັງຊອກຫາ...", sleepTitle: "ນອກເວລາໃຫ້ບໍລິການ" }
         };
 
         function log(msg) {
@@ -184,7 +186,9 @@
             currentLang = lang;
             document.querySelectorAll('.lang-btn').forEach(btn => {
                 btn.classList.remove('active');
-                if (btn.innerText === lang || (lang === 'CN' && btn.innerText === '中文')) btn.classList.add('active');
+                if (btn.innerText === lang || (lang === 'CN' && btn.innerText === '中文') || (lang === 'LA' && btn.innerText === 'ລາວ')) {
+                    btn.classList.add('active');
+                }
             });
             document.getElementById('ui-stop-name').innerText = uiText[lang].stop;
             document.getElementById('ui-eta-label').innerText = uiText[lang].etaLabel;
@@ -195,7 +199,7 @@
             document.getElementById('ui-dist-unit').innerText = uiText[lang].distUnit;
             document.getElementById('ui-sleep-title').innerText = uiText[lang].sleepTitle;
             const currentRouteText = document.getElementById('bus-route-name').innerText;
-            if ([uiText['TH'].searching, uiText['EN'].searching, uiText['CN'].searching].includes(currentRouteText)) {
+            if ([uiText['TH'].searching, uiText['EN'].searching, uiText['CN'].searching, uiText['LA'].searching].includes(currentRouteText)) {
                 updateRouteNameMarquee(uiText[lang].searching);
             }
         }
@@ -243,9 +247,11 @@
         function announceWelcome() {
             if (isSleepMode()) return; 
             const th = "สวัสดีขอนแก่น ผู้โดยสารขอนแก่นซิตี้บัส โปรดทราบ ขณะนี้ท่านอยู่ที่ป้าย เซ็นทรัลพลาซ่าขอนแก่น ท่านสามารถรอรถเพื่อเดินทางไปยังสนามบิน หรือข้ามถนนไปยังป้ายรถเมล์ฝั่งตรงข้าม เพื่อเดินทางไปสถานีขนส่งผู้โดยสารแห่งที่ 3 ระบบจะทำการแจ้งเตือนให้ทราบอีกครั้ง เมื่อรถใกล้เข้าจอด";
-            const en = "Hello Khon Kaen. Attention Khon Kaen City Bus passengers. You are currently at the Central Plaza Khon Kaen stop...";
-            const cn = "你好，孔敬。孔敬城市巴士的乘客请注意，您现在位于孔敬中央广场站...";
-            speakAlertMultiLang(th, en, cn, true);
+            const en = "Hello Khon Kaen. Attention Khon Kaen City Bus passengers. You are currently at the Central Plaza Khon Kaen stop. You can wait here for the bus to the airport, or cross the street to the opposite bus stop to travel to Passenger Terminal 3. The system will notify you again when the bus is approaching.";
+            const cn = "你好，孔敬。孔敬城市巴士的乘客请注意，您现在位于孔敬中央广场站。您可以在此等候前往机场的巴士，或过马路到对面的公交站乘车前往三号客运站。当巴士快到时，系统会再次通知您。";
+            // 🎯 เพิ่มประโยคต้อนรับภาษาลาว
+            const la = "ສະບາຍດີຂອນແກ່ນ ຜູ້ໂດຍສານຂອນແກ່ນຊິຕີ້ບັດ ໂປດຊາບ ຂະນະນີ້ທ່ານຢູ່ທີ່ປ້າຍ ເຊັນໂທຣພລາຊາຂອນແກ່ນ ທ່ານສາມາດລໍຖ້າລົດເພື່ອເດີນທາງໄປຍັງສະໜາມບິນ ຫຼືຂ້າມທາງໄປຍັງປ້າຍລົດເມຝັ່ງກົງກັນຂ້າມ ເພື່ອເດີນທາງໄປສະຖານີຂົນສົ່ງຜູ້ໂດຍສານແຫ່ງທີ 3 ລະບົບຈະທຳການແຈ້ງເຕືອນໃຫ້ຊາບອີກຄັ້ງ ເມື່ອລົດໃກ້ເຂົ້າຈອດ";
+            speakAlertMultiLang(th, en, cn, la, true);
         }
 
         async function fetchAndCheckBus() {
@@ -271,43 +277,28 @@
                     let closestBus = null;
                     let minDistance = Infinity;
 
-                    // 🎯 1. ประมวลผลรถแต่ละคัน (หาคันที่ "เข้าใกล้" จริงๆ)
                     buses.forEach(bus => {
                         const carId = bus.gps_car_id;
                         const currentDist = calculateDistance(TARGET_STOP_LAT, TARGET_STOP_LNG, parseFloat(bus.gps_lat), parseFloat(bus.gps_long));
-                        
-                        let isApproaching = true; // สมมติไว้ก่อนว่าวิ่งเข้าหาป้าย
+                        let isApproaching = true; 
 
-                        // ถ้ารถคันนี้เคยมีประวัติอยู่ในระบบแล้ว ให้เช็คพฤติกรรม
                         if (busTracker[carId]) {
                             const prevDist = busTracker[carId].distance;
-                            
-                            // ถ้าระยะห่าง "มากกว่า" เดิม (เผื่อค่า GPS แกว่งแล้ว) แปลว่าขับเลยไปแล้ว หรืออยู่เลนฝั่งตรงข้าม
                             if (currentDist > prevDist + GPS_BUFFER_KM) {
                                 isApproaching = false;
-                                log(`คันเบอร์ ${carId} วิ่งออกห่าง (ข้าม)`);
-                            } 
-                            // ถ้าระยะเข้าใกล้มากขึ้นอย่างชัดเจน
-                            else if (currentDist < prevDist - 0.01) {
+                            } else if (currentDist < prevDist - 0.01) {
                                 isApproaching = true;
-                            } 
-                            // ถ้าระยะแทบไม่ขยับ (จอดติดไฟแดง) ให้ยึดทิศทางเดิมจากครั้งก่อน
-                            else {
+                            } else {
                                 isApproaching = busTracker[carId].isApproaching;
                             }
                         }
-
-                        // อัปเดตข้อมูลประวัติให้เป็นปัจจุบัน
                         busTracker[carId] = { distance: currentDist, isApproaching: isApproaching };
 
-                        // 🎯 2. เลือกรถที่ระยะทางใกล้ที่สุด **และต้องกำลังวิ่งเข้าหาป้ายเท่านั้น**
                         if (isApproaching && currentDist < minDistance) {
-                            minDistance = currentDist;
-                            closestBus = bus;
+                            minDistance = currentDist; closestBus = bus;
                         }
                     });
 
-                    // ถ้าเจอรถคันที่ตรงเงื่อนไข
                     if (closestBus) {
                         let etaMinutes = Math.round((minDistance / AVERAGE_SPEED_KMH) * 60);
                         if (etaMinutes <= 0 && minDistance > 0) etaMinutes = 1;
@@ -325,15 +316,16 @@
                             const routeTextTH = closestBus.gps_route_name.split(':')[0]; 
                             const carId = closestBus.gps_car_id;
                             
+                            // 🎯 ประกาศ 4 ภาษา
                             speakAlertMultiLang(
                                 `ผู้โดยสารโปรดทราบ รถเมล์สาย${routeTextTH} จะเข้าจอดในอีกประมาณ ${etaMinutes} นาที`, 
                                 `Attention, bus number ${carId} will arrive in approximately ${etaMinutes} minutes.`, 
-                                `请注意，${carId} 号公交车将在大约 ${etaMinutes} 分钟后到达。`, 
+                                `请注意，${carId} 号公交车将在大约 ${etaMinutes} 分钟后到达。`,
+                                `ຜູ້ໂດຍສານໂປດຊາບ, ລົດເມສາຍ ${routeTextTH} ຈະເຂົ້າຈອດໃນອີກປະມານ ${etaMinutes} ນາທີ.`, 
                             false);
                             lastSpokenEta = etaMinutes; isFirstCalculation = false; 
                         }
                     } else {
-                        // กรณีที่เจอรถใน API แต่ทุกคันกำลัง "วิ่งออกห่าง" หมดเลย
                         updateRouteNameMarquee(uiText[currentLang].searching);
                         document.getElementById('bus-car-id').innerText = "--";
                         document.getElementById('eta-mins').innerText = "-";
@@ -350,7 +342,8 @@
             } catch (err) { log("Error: " + err.message); }
         }
 
-        function speakAlertMultiLang(th, en, cn, isWelcome) {
+        // 🎯 อัปเดตฟังก์ชันรับรอง 4 ภาษา
+        function speakAlertMultiLang(th, en, cn, la, isWelcome) {
             if ('speechSynthesis' in window) {
                 if (!isWelcome) window.speechSynthesis.cancel(); 
                 playChime();
@@ -358,14 +351,22 @@
                     const utterances = [
                         { text: th, langCode: 'th-TH', pitch: 1.1, rate: 1.0 }, 
                         { text: en, langCode: 'en-US', pitch: 1.0, rate: 0.9 },
-                        { text: cn, langCode: 'zh-CN', pitch: 1.0, rate: 0.9 }
+                        { text: cn, langCode: 'zh-CN', pitch: 1.0, rate: 0.9 },
+                        { text: la, langCode: 'lo-LA', pitch: 1.0, rate: 0.9 } // ภาษาลาว
                     ];
+                    
                     utterances.forEach(item => {
                         let msg = new SpeechSynthesisUtterance(item.text);
                         msg.lang = item.langCode; msg.pitch = item.pitch; msg.rate = item.rate;
+                        
                         const specificVoice = getBestVoiceForLang(item.langCode);
-                        if (specificVoice) msg.voice = specificVoice;
-                        window.speechSynthesis.speak(msg);
+                        if (specificVoice) {
+                            msg.voice = specificVoice;
+                            window.speechSynthesis.speak(msg);
+                        } else if (item.langCode !== 'lo-LA') { 
+                            // ถ้าหาเสียงลาวไม่เจอ ให้ข้ามไปเลย จะได้ไม่เอาเสียงภาษาอังกฤษมาพยายามอ่านลาว
+                            window.speechSynthesis.speak(msg);
+                        }
                     });
                 }, 1200);
             }
