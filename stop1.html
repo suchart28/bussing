@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bus Alert - Khon Kaen City Bus (Sleep Mode)</title>
+    <title>Bus Alert - Khon Kaen City Bus (Direction Tracking)</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -49,8 +49,7 @@
         .bus-info-card { 
             background: linear-gradient(145deg, rgba(26,26,26,0.95), rgba(17,17,17,0.95)); width: 100%; border-radius: 30px; 
             padding: 3vh 5vw; margin-bottom: 1vh; border: 2px solid #333; 
-            display: flex; flex-direction: column; gap: 2vh; box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-            flex-shrink: 0; 
+            display: flex; flex-direction: column; gap: 2vh; box-shadow: 0 10px 30px rgba(0,0,0,0.5); flex-shrink: 0; 
         }
         .info-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2a2a2a; padding-bottom: 1.5vh; }
         .info-row:last-child { border-bottom: none; padding-bottom: 0; }
@@ -61,16 +60,12 @@
         .marquee-container { max-width: 65%; overflow: hidden; white-space: nowrap; }
         .marquee-content { display: inline-block; color: #00e676; font-size: clamp(18px, 3.2vh, 36px); font-weight: 700; text-shadow: 0 0 15px rgba(0,230,118,0.3); }
         .marquee-content.scroll { animation: scroll-left 6s linear infinite alternate; }
-        @keyframes scroll-left {
-            0%, 15% { transform: translateX(0); }
-            85%, 100% { transform: translateX(var(--scroll-dist)); }
-        }
+        @keyframes scroll-left { 0%, 15% { transform: translateX(0); } 85%, 100% { transform: translateX(var(--scroll-dist)); } }
 
         #view-start { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .start-text { color:#aaa; text-align:center; font-size: 2.5vh; line-height: 1.6; margin-bottom: 4vh; font-weight: 500;}
         .btn-huge { background: linear-gradient(135deg, #00c853 0%, #00e676 100%); color: #000; border: none; width: 100%; padding: 2.5vh; font-size: 3vh; font-weight: 700; border-radius: 50px; cursor: pointer; box-shadow: 0 10px 30px rgba(0,230,118,0.4); flex-shrink: 0;}
         
-        /* หน้าจอโหมดพัก (Sleep Mode) */
         #view-sleep { flex: 1; display: none; flex-direction: column; justify-content: center; align-items: center; }
         .sleep-icon { font-size: clamp(60px, 15vh, 150px); margin-bottom: 2vh; text-shadow: 0 0 30px rgba(255,255,255,0.2); }
         .sleep-title { color: #fff; font-size: clamp(24px, 4vh, 45px); font-weight: 700; letter-spacing: 2px; }
@@ -95,9 +90,7 @@
         </div>
 
         <div id="view-start">
-            <p class="start-text">
-                ระบบแจ้งเตือนป้ายรถเมล์อัจฉริยะ<br>กำลังโหลดชุดเสียงบนอุปกรณ์ของคุณ...
-            </p>
+            <p class="start-text">ระบบแจ้งเตือนป้ายรถเมล์อัจฉริยะ<br>กำลังโหลดชุดเสียงบนอุปกรณ์ของคุณ...</p>
             <button id="start-btn" class="btn-huge" onclick="initApp()">🔊 เริ่มระบบประกาศสาธารณะ</button>
         </div>
 
@@ -144,13 +137,17 @@
         let audioCtx = null;
         let availableVoices = [];
         let currentLang = 'TH'; 
-        let appStarted = false; // ตัวแปรเช็คว่ากดเริ่มระบบไปหรือยัง
+        let appStarted = false; 
+
+        // 🎯 ระบบ Tracking จดจำประวัติระยะทางของรถแต่ละคัน
+        let busTracker = {}; 
 
         const API_URL = 'https://public.bussing.app/gps-current/7';
         const CHECK_INTERVAL = 30000; 
         const WELCOME_INTERVAL = 300000; 
         const AVERAGE_SPEED_KMH = 15; 
         const ALERT_MINUTES = 2; 
+        const GPS_BUFFER_KM = 0.05; // ค่าความคลาดเคลื่อน GPS 50 เมตร (ป้องกันพิกัดแกว่งตอนจอดติดไฟแดง)
 
         const uiText = {
             TH: { stop: "📍 ป้าย: เซ็นทรัลพลาซ่า ขอนแก่น", etaLabel: "รถจะถึงในอีก", etaUnit: "นาที", routeLabel: "สายรถ:", carLabel: "เบอร์รถ:", distLabel: "ระยะทาง:", distUnit: "กม.", searching: "กำลังค้นหา...", sleepTitle: "นอกเวลาให้บริการ" },
@@ -164,7 +161,6 @@
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 
-        // 🎯 ฟังก์ชันตรวจสอบเวลา (โหมดพัก 20:00 - 04:59)
         function isSleepMode() {
             const hour = new Date().getHours();
             return (hour >= 20 || hour < 5);
@@ -175,7 +171,6 @@
             const content = document.getElementById('bus-route-name');
             content.innerText = text;
             content.classList.remove('scroll');
-            
             setTimeout(() => {
                 if (content.scrollWidth > container.clientWidth) {
                     const scrollDistance = container.clientWidth - content.scrollWidth;
@@ -187,14 +182,10 @@
 
         function setUILanguage(lang) {
             currentLang = lang;
-            
             document.querySelectorAll('.lang-btn').forEach(btn => {
                 btn.classList.remove('active');
-                if (btn.innerText === lang || (lang === 'CN' && btn.innerText === '中文')) {
-                    btn.classList.add('active');
-                }
+                if (btn.innerText === lang || (lang === 'CN' && btn.innerText === '中文')) btn.classList.add('active');
             });
-
             document.getElementById('ui-stop-name').innerText = uiText[lang].stop;
             document.getElementById('ui-eta-label').innerText = uiText[lang].etaLabel;
             document.getElementById('ui-eta-unit').innerText = uiText[lang].etaUnit;
@@ -203,18 +194,14 @@
             document.getElementById('ui-dist-label').innerText = uiText[lang].distLabel;
             document.getElementById('ui-dist-unit').innerText = uiText[lang].distUnit;
             document.getElementById('ui-sleep-title').innerText = uiText[lang].sleepTitle;
-            
             const currentRouteText = document.getElementById('bus-route-name').innerText;
-            if (currentRouteText === uiText['TH'].searching || currentRouteText === uiText['EN'].searching || currentRouteText === uiText['CN'].searching) {
+            if ([uiText['TH'].searching, uiText['EN'].searching, uiText['CN'].searching].includes(currentRouteText)) {
                 updateRouteNameMarquee(uiText[lang].searching);
             }
         }
 
         function loadVoices() { availableVoices = window.speechSynthesis.getVoices(); }
-        if ('speechSynthesis' in window) {
-            loadVoices();
-            if (window.speechSynthesis.onvoiceschanged !== undefined) window.speechSynthesis.onvoiceschanged = loadVoices;
-        }
+        if ('speechSynthesis' in window) { loadVoices(); window.speechSynthesis.onvoiceschanged = loadVoices; }
 
         function getBestVoiceForLang(langCode) {
             let voice = availableVoices.find(v => v.lang === langCode || v.lang === langCode.replace('-', '_'));
@@ -227,71 +214,55 @@
             const playNote = (freq, startTime, duration) => {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(freq, startTime);
-                gain.gain.setValueAtTime(0.2, startTime);
-                gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(freq, startTime);
+                gain.gain.setValueAtTime(0.2, startTime); gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
                 osc.connect(gain); gain.connect(audioCtx.destination);
                 osc.start(startTime); osc.stop(startTime + duration);
             };
-            const now = audioCtx.currentTime;
-            playNote(523.25, now, 0.8); playNote(392.00, now + 0.5, 0.8); 
+            const now = audioCtx.currentTime; playNote(523.25, now, 0.8); playNote(392.00, now + 0.5, 0.8); 
         }
 
         async function initApp() {
             if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
-            
             document.getElementById('view-start').style.display = 'none';
             document.getElementById('lang-menu').style.display = 'flex'; 
             appStarted = true;
 
-            // ตรวจสอบโหมดพักทันทีที่กดเริ่ม
             if (isSleepMode()) {
                 document.getElementById('view-sleep').style.display = 'flex';
                 document.getElementById('view-tracking').style.display = 'none';
-                log("🌙 เข้าสู่โหมดพัก (20:00 - 05:00)");
             } else {
                 document.getElementById('view-sleep').style.display = 'none';
                 document.getElementById('view-tracking').style.display = 'flex';
                 announceWelcome(); 
             }
-            
             setInterval(announceWelcome, WELCOME_INTERVAL);
-            fetchAndCheckBus(); 
-            setInterval(fetchAndCheckBus, CHECK_INTERVAL);
+            fetchAndCheckBus(); setInterval(fetchAndCheckBus, CHECK_INTERVAL);
         }
 
         function announceWelcome() {
-            if (isSleepMode()) return; // 🛑 หยุดประกาศเสียงถ้าอยู่ในโหมดพัก
-            
+            if (isSleepMode()) return; 
             const th = "สวัสดีขอนแก่น ผู้โดยสารขอนแก่นซิตี้บัส โปรดทราบ ขณะนี้ท่านอยู่ที่ป้าย เซ็นทรัลพลาซ่าขอนแก่น ท่านสามารถรอรถเพื่อเดินทางไปยังสนามบิน หรือข้ามถนนไปยังป้ายรถเมล์ฝั่งตรงข้าม เพื่อเดินทางไปสถานีขนส่งผู้โดยสารแห่งที่ 3 ระบบจะทำการแจ้งเตือนให้ทราบอีกครั้ง เมื่อรถใกล้เข้าจอด";
-            const en = "Hello Khon Kaen. Attention Khon Kaen City Bus passengers. You are currently at the Central Plaza Khon Kaen stop. You can wait here for the bus to the airport, or cross the street to the opposite bus stop to travel to Passenger Terminal 3. The system will notify you again when the bus is approaching.";
-            const cn = "你好，孔敬。孔敬城市巴士的乘客请注意，您现在位于孔敬中央广场站。您可以在此等候前往机场的巴士，或过马路到对面的公交站乘车前往三号客运站。当巴士快到时，系统会再次通知您。";
+            const en = "Hello Khon Kaen. Attention Khon Kaen City Bus passengers. You are currently at the Central Plaza Khon Kaen stop...";
+            const cn = "你好，孔敬。孔敬城市巴士的乘客请注意，您现在位于孔敬中央广场站...";
             speakAlertMultiLang(th, en, cn, true);
         }
 
         async function fetchAndCheckBus() {
-            // 🛑 เช็คโหมดพักก่อนทำงาน
             if (isSleepMode()) {
                 if (appStarted) {
                     document.getElementById('view-tracking').style.display = 'none';
                     document.getElementById('view-sleep').style.display = 'flex';
-                    document.body.classList.remove('flash-green'); // ปิดไฟกระพริบ
-                }
-                return; // จบการทำงานฟังก์ชัน ไม่ดึง API ต่อ
-            } else {
-                // ถ้าอยู่นอกเวลาพัก ให้เปิดหน้าจอกลับมา
-                if (appStarted && document.getElementById('view-sleep').style.display === 'flex') {
-                    document.getElementById('view-sleep').style.display = 'none';
-                    document.getElementById('view-tracking').style.display = 'flex';
-                    isFirstCalculation = true; // รีเซ็ตการแจ้งเตือนเสียง
-                    log("☀️ ระบบกลับมาทำงาน (05:00)");
-                }
+                    document.body.classList.remove('flash-green'); 
+                } return; 
+            } else if (appStarted && document.getElementById('view-sleep').style.display === 'flex') {
+                document.getElementById('view-sleep').style.display = 'none';
+                document.getElementById('view-tracking').style.display = 'flex';
+                isFirstCalculation = true; 
             }
 
             try {
-                const cacheBuster = '?t=' + new Date().getTime();
-                const freshProxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(API_URL + cacheBuster);
+                const freshProxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(API_URL + '?t=' + new Date().getTime());
                 const response = await fetch(freshProxyUrl);
                 const result = await response.json();
                 const buses = result.data;
@@ -300,37 +271,74 @@
                     let closestBus = null;
                     let minDistance = Infinity;
 
+                    // 🎯 1. ประมวลผลรถแต่ละคัน (หาคันที่ "เข้าใกล้" จริงๆ)
                     buses.forEach(bus => {
-                        const distance = calculateDistance(TARGET_STOP_LAT, TARGET_STOP_LNG, parseFloat(bus.gps_lat), parseFloat(bus.gps_long));
-                        if (distance < minDistance) { minDistance = distance; closestBus = bus; }
+                        const carId = bus.gps_car_id;
+                        const currentDist = calculateDistance(TARGET_STOP_LAT, TARGET_STOP_LNG, parseFloat(bus.gps_lat), parseFloat(bus.gps_long));
+                        
+                        let isApproaching = true; // สมมติไว้ก่อนว่าวิ่งเข้าหาป้าย
+
+                        // ถ้ารถคันนี้เคยมีประวัติอยู่ในระบบแล้ว ให้เช็คพฤติกรรม
+                        if (busTracker[carId]) {
+                            const prevDist = busTracker[carId].distance;
+                            
+                            // ถ้าระยะห่าง "มากกว่า" เดิม (เผื่อค่า GPS แกว่งแล้ว) แปลว่าขับเลยไปแล้ว หรืออยู่เลนฝั่งตรงข้าม
+                            if (currentDist > prevDist + GPS_BUFFER_KM) {
+                                isApproaching = false;
+                                log(`คันเบอร์ ${carId} วิ่งออกห่าง (ข้าม)`);
+                            } 
+                            // ถ้าระยะเข้าใกล้มากขึ้นอย่างชัดเจน
+                            else if (currentDist < prevDist - 0.01) {
+                                isApproaching = true;
+                            } 
+                            // ถ้าระยะแทบไม่ขยับ (จอดติดไฟแดง) ให้ยึดทิศทางเดิมจากครั้งก่อน
+                            else {
+                                isApproaching = busTracker[carId].isApproaching;
+                            }
+                        }
+
+                        // อัปเดตข้อมูลประวัติให้เป็นปัจจุบัน
+                        busTracker[carId] = { distance: currentDist, isApproaching: isApproaching };
+
+                        // 🎯 2. เลือกรถที่ระยะทางใกล้ที่สุด **และต้องกำลังวิ่งเข้าหาป้ายเท่านั้น**
+                        if (isApproaching && currentDist < minDistance) {
+                            minDistance = currentDist;
+                            closestBus = bus;
+                        }
                     });
 
-                    let etaMinutes = Math.round((minDistance / AVERAGE_SPEED_KMH) * 60);
-                    if (etaMinutes <= 0 && minDistance > 0) etaMinutes = 1;
+                    // ถ้าเจอรถคันที่ตรงเงื่อนไข
+                    if (closestBus) {
+                        let etaMinutes = Math.round((minDistance / AVERAGE_SPEED_KMH) * 60);
+                        if (etaMinutes <= 0 && minDistance > 0) etaMinutes = 1;
 
-                    updateRouteNameMarquee(closestBus.gps_route_name);
-                    document.getElementById('bus-car-id').innerText = closestBus.gps_car_id;
-                    document.getElementById('eta-mins').innerText = etaMinutes;
-                    document.getElementById('distance-km').innerText = minDistance.toFixed(2);
-                    
-                    if (etaMinutes <= ALERT_MINUTES) {
-                        document.body.classList.add('flash-green');
+                        updateRouteNameMarquee(closestBus.gps_route_name);
+                        document.getElementById('bus-car-id').innerText = closestBus.gps_car_id;
+                        document.getElementById('eta-mins').innerText = etaMinutes;
+                        document.getElementById('distance-km').innerText = minDistance.toFixed(2);
+                        
+                        if (etaMinutes <= ALERT_MINUTES) { document.body.classList.add('flash-green'); } 
+                        else { document.body.classList.remove('flash-green'); }
+                        
+                        const speechLevels = [10, 5, 2, 1];
+                        if (isFirstCalculation || (speechLevels.includes(etaMinutes) && etaMinutes !== lastSpokenEta)) {
+                            const routeTextTH = closestBus.gps_route_name.split(':')[0]; 
+                            const carId = closestBus.gps_car_id;
+                            
+                            speakAlertMultiLang(
+                                `ผู้โดยสารโปรดทราบ รถเมล์สาย${routeTextTH} จะเข้าจอดในอีกประมาณ ${etaMinutes} นาที`, 
+                                `Attention, bus number ${carId} will arrive in approximately ${etaMinutes} minutes.`, 
+                                `请注意，${carId} 号公交车将在大约 ${etaMinutes} 分钟后到达。`, 
+                            false);
+                            lastSpokenEta = etaMinutes; isFirstCalculation = false; 
+                        }
                     } else {
+                        // กรณีที่เจอรถใน API แต่ทุกคันกำลัง "วิ่งออกห่าง" หมดเลย
+                        updateRouteNameMarquee(uiText[currentLang].searching);
+                        document.getElementById('bus-car-id').innerText = "--";
+                        document.getElementById('eta-mins').innerText = "-";
+                        document.getElementById('distance-km').innerText = "-.-";
                         document.body.classList.remove('flash-green');
-                    }
-                    
-                    const speechLevels = [10, 5, 2, 1];
-                    if (isFirstCalculation || (speechLevels.includes(etaMinutes) && etaMinutes !== lastSpokenEta)) {
-                        const routeTextTH = closestBus.gps_route_name.split(':')[0]; 
-                        const carId = closestBus.gps_car_id;
-                        
-                        const textTH = `ผู้โดยสารโปรดทราบ รถเมล์สาย${routeTextTH} จะเข้าจอดในอีกประมาณ ${etaMinutes} นาที`;
-                        const textEN = `Attention, bus number ${carId} will arrive in approximately ${etaMinutes} minutes.`;
-                        const textCN = `请注意，${carId} 号公交车将在大约 ${etaMinutes} 分钟后到达。`;
-                        
-                        speakAlertMultiLang(textTH, textEN, textCN, false);
-                        lastSpokenEta = etaMinutes;
-                        isFirstCalculation = false; 
                     }
                 } else {
                     updateRouteNameMarquee(uiText[currentLang].searching);
