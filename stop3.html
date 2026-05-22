@@ -339,12 +339,13 @@
 
         function announceWelcome() {
             if (isSleepMode()) return; 
-            const th = "สวัสดีขอนแก่น ผู้โดยสารขอนแก่นซิตี้บัส โปรดทราบ ขณะนี้ท่านอยู่ที่ป้าย เซ็นทรัล ขอนแก่น แคมปัส";
-            const en = "Hello Khon Kaen. Attention Khon Kaen City Bus passengers. You are currently at the Central Khon Kaen Campus stop.";
-            const cn = "你好，孔敬。孔敬城市巴士的乘客请注意，您现在位于孔敬中央广场校园站。";
-            const la = "ສະບາຍດີຂອນແກ່ນ ຜູ້ໂດຍສານຂอนແກ່ນຊິຕີ້ບັດ ໂປດຊາບ ຂະນະນີ້ທ່ານຢູ່ທີ່ປ້າຍ ເຊັນໂທຣ ຂອນແກ່ນ ແຄມປັສ";
+            const th = "สวัสดีขอนแก่น ผู้โดยสารขอนแก่นซิตี้บัส โปรดทราบ ขณะนี้ท่านอยู่ที่ป้าย เซ็นทรัล ขอนแก่น แคมปัส ท่านสามารถรอรถเพื่อเดินทางไปยังสนามบิน หรือข้ามถนนไปยังป้ายรถเมล์ฝั่งตรงข้าม เพื่อเดินทางไป เซ็นทรัล พลาซ่า ขอนแก่น สาขาประตูเมือง ระบบจะทำการแจ้งเตือนให้ทราบอีกครั้ง เมื่อรถใกล้เข้าจอด";
+            const en = "Hello Khon Kaen, Khon Kaen City Bus passengers. Please note that you are currently at the Central Khon Kaen Campus bus stop. You can wait for a bus to the airport or cross the road to the bus stop on the opposite side to go to Central Plaza Khon Kaen, Pratu Muang branch. The system will notify you again when the bus is approaching.";
+            const cn = "孔敬的各位乘客，您好！您目前位于孔敬中心校区巴士站。您可以在此等候前往机场的巴士，或者过马路到马路对面的巴士站，前往孔敬中心广场（Pratu Muang分站）。巴士即将到达时，系统会再次通知您。";
+            const la = "ສະບາຍດີ ຂໍນແກ່ນ, ຜູ້ໂດຍສານລົດເມເມືອງຂໍນແກ່ນ. ກະລຸນາຮັບຊາບວ່າປະຈຸບັນທ່ານຢູ່ທີ່ປ້າຍລົດເມສູນກາງ ຂໍນແກ່ນ. ທ່ານສາມາດລໍຖ້າລົດເມໄປສະໜາມບິນ ຫຼື ຂ້າມຖະໜົນໄປປ້າຍລົດເມຢູ່ຝັ່ງກົງກັນຂ້າມເພື່ອໄປທີ່ ສູນກາງຂໍນແກ່ນ ສາຂາປະຕູເມືອງ. ລະບົບຈະແຈ້ງໃຫ້ທ່ານຊາບອີກຄັ້ງເມື່ອລົດເມມາຮອດ.";
             speakAlertMultiLang(th, en, cn, la, true);
         }
+
 
         async function fetchAndCheckBus() {
             if (isSleepMode()) {
