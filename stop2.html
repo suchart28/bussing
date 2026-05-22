@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bus Alert - Khon Kaen City Bus (Auto Start + BGM)</title>
+    <title>Bus Alert - Khon Kaen City Bus (Auto Start)</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -69,6 +69,7 @@
 
         #log { font-size: 11px; color: #555; height: 5vh; overflow-y: scroll; background: #050505; padding: 1vh 2vw; border-top: 1px solid #111; flex-shrink: 0; z-index: 10; font-weight: 400;}
         
+        /* เพิ่มแจ้งเตือนให้แตะหน้าจอ (ซ่อนอัตโนมัติเมื่อกดแล้ว) */
         #tap-to-unmute {
             position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0,0,0,0.8); color: #fff; display: flex; flex-direction: column;
@@ -79,8 +80,6 @@
     </style>
 </head>
 <body>
-
-    <audio id="bg-music" src="music.mp3" loop preload="auto"></audio>
 
     <div id="tap-to-unmute" onclick="unlockAudio()">
         <div class="tap-icon">👆</div>
@@ -156,7 +155,7 @@
         const ALERT_MINUTES = 2; 
         const GPS_BUFFER_KM = 0.05; 
 
-       const uiText = {
+        const uiText = {
             TH: { stop: "📍 ป้าย: เซ็นทรัล ขอนแก่น แคมปัส", etaLabel: "รถจะถึงในอีก", etaUnit: "นาที", routeLabel: "สายรถ:", carLabel: "เบอร์รถ:", distLabel: "ระยะทาง:", distUnit: "กม.", searching: "กำลังค้นหา...", sleepTitle: "นอกเวลาให้บริการ" },
             EN: { stop: "📍 Stop: Central Khon Kaen Campus", etaLabel: "Arriving in", etaUnit: "Mins", routeLabel: "Route:", carLabel: "Bus No:", distLabel: "Distance:", distUnit: "km", searching: "Searching...", sleepTitle: "Out of Service" },
             CN: { stop: "📍 站点: 孔敬中央校区", etaLabel: "即将到达", etaUnit: "分钟", routeLabel: "路线:", carLabel: "车号:", distLabel: "距离:", distUnit: "公里", searching: "搜索中...", sleepTitle: "非营业时间" },
@@ -173,19 +172,16 @@
             "เซ็นทรัล": { EN: "Central", CN: "中央广场", LA: "ເຊັນໂທຣ" }
         };
 
-        window.addEventListener('load', () => { initApp(); });
+        // เริ่มระบบอัตโนมัติเมื่อโหลดหน้าจอเสร็จ
+        window.addEventListener('load', () => {
+            initApp();
+        });
 
-        // 🎯 ฟังก์ชันปลดล็อคเสียงและเริ่มเล่นดนตรี
+        // ฟังก์ชันปลดล็อคเสียงเมื่อผู้ใช้แตะหน้าจอครั้งแรก
         function unlockAudio() {
             document.getElementById('tap-to-unmute').style.display = 'none';
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            
-            // สั่งเล่นเพลงพื้นหลังและตั้งความดัง (0.15 = ดัง 15%)
-            const bgMusic = document.getElementById('bg-music');
-            bgMusic.volume = 0.15; 
-            bgMusic.play().catch(err => log("ไม่สามารถเล่นเพลงได้: " + err));
-
             if ('speechSynthesis' in window) {
                 let silentMsg = new SpeechSynthesisUtterance('');
                 window.speechSynthesis.speak(silentMsg);
@@ -293,7 +289,7 @@
 
         function announceWelcome() {
             if (isSleepMode()) return; 
-           const th = "สวัสดีขอนแก่น ผู้โดยสารขอนแก่นซิตี้บัส โปรดทราบ ขณะนี้ท่านอยู่ที่ป้าย เซ็นทรัล ขอนแก่น แคมปัส ท่านสามารถรอรถเพื่อเดินทางไปยังสนามบิน หรือข้ามถนนไปยังป้ายรถเมล์ฝั่งตรงข้าม เพื่อเดินทางไป เซ็นทรัล พลาซ่า ขอนแก่น สาขาประตูเมือง ระบบจะทำการแจ้งเตือนให้ทราบอีกครั้ง เมื่อรถใกล้เข้าจอด";
+            const th = "สวัสดีขอนแก่น ผู้โดยสารขอนแก่นซิตี้บัส โปรดทราบ ขณะนี้ท่านอยู่ที่ป้าย เซ็นทรัล ขอนแก่น แคมปัส ท่านสามารถรอรถเพื่อเดินทางไปยังสนามบิน หรือข้ามถนนไปยังป้ายรถเมล์ฝั่งตรงข้าม เพื่อเดินทางไป เซ็นทรัล พลาซ่า ขอนแก่น สาขาประตูเมือง ระบบจะทำการแจ้งเตือนให้ทราบอีกครั้ง เมื่อรถใกล้เข้าจอด";
             const en = "Hello Khon Kaen, Khon Kaen City Bus passengers. Please note that you are currently at the Central Khon Kaen Campus bus stop. You can wait for a bus to the airport or cross the road to the bus stop on the opposite side to go to Central Plaza Khon Kaen, Pratu Muang branch. The system will notify you again when the bus is approaching.";
             const cn = "孔敬的各位乘客，您好！您目前位于孔敬中心校区巴士站。您可以在此等候前往机场的巴士，或者过马路到马路对面的巴士站，前往孔敬中心广场（Pratu Muang分站）。巴士即将到达时，系统会再次通知您。";
             const la = "ສະບາຍດີ ຂໍນແກ່ນ, ຜູ້ໂດຍສານລົດເມເມືອງຂໍນແກ່ນ. ກະລຸນາຮັບຊາບວ່າປະຈຸບັນທ່ານຢູ່ທີ່ປ້າຍລົດເມສູນກາງ ຂໍນແກ່ນ. ທ່ານສາມາດລໍຖ້າລົດເມໄປສະໜາມບິນ ຫຼື ຂ້າມຖະໜົນໄປປ້າຍລົດເມຢູ່ຝັ່ງກົງກັນຂ້າມເພື່ອໄປທີ່ ສູນກາງຂໍນແກ່ນ ສາຂາປະຕູເມືອງ. ລະບົບຈະແຈ້ງໃຫ້ທ່ານຊາບອີກຄັ້ງເມື່ອລົດເມມາຮອດ.";
@@ -385,4 +381,45 @@
                     updateRouteNameMarquee(uiText[currentLang].searching);
                     document.getElementById('bus-car-id').innerText = "--";
                     document.getElementById('eta-mins').innerText = "-";
-                    document.getElementById('
+                    document.getElementById('distance-km').innerText = "-.-";
+                    document.body.classList.remove('flash-green');
+                }
+            } catch (err) { log("Error: " + err.message); }
+        }
+
+        function speakAlertMultiLang(th, en, cn, la, isWelcome) {
+            if ('speechSynthesis' in window) {
+                if (!isWelcome) window.speechSynthesis.cancel(); 
+                playChime();
+                setTimeout(() => {
+                    const utterances = [
+                        { text: th, langCode: 'th-TH', pitch: 1.1, rate: 1.0 }, 
+                        { text: en, langCode: 'en-US', pitch: 1.0, rate: 0.9 },
+                        { text: cn, langCode: 'zh-CN', pitch: 1.0, rate: 0.9 },
+                        { text: la, langCode: 'lo-LA', pitch: 1.0, rate: 0.9 }
+                    ];
+                    
+                    utterances.forEach(item => {
+                        let msg = new SpeechSynthesisUtterance(item.text);
+                        msg.lang = item.langCode; msg.pitch = item.pitch; msg.rate = item.rate;
+                        
+                        const specificVoice = getBestVoiceForLang(item.langCode);
+                        if (specificVoice) {
+                            msg.voice = specificVoice;
+                            window.speechSynthesis.speak(msg);
+                        } else if (item.langCode !== 'lo-LA') { 
+                            window.speechSynthesis.speak(msg);
+                        }
+                    });
+                }, 1200);
+            }
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+    </script>
+</body>
+</html>
