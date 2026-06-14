@@ -342,7 +342,7 @@
             const th = "สวัสดีขอนแก่น ผู้โดยสารขอนแก่นซิตี้บัส โปรดทราบ ขณะนี้ท่านอยู่ที่ป้าย รถเมล์เดิ้ล เทศกาลอีสานสร้างสรรค์ ท่านสามารถรอรถเพื่อเดินทางไปยังสนามบิน หรือข้ามถนนไปยังป้ายรถเมล์ฝั่งตรงข้าม เพื่อเดินทางไป สถานีขนส่งแห่งที่ 3 ระบบจะทำการแจ้งเตือนให้ทราบอีกครั้ง เมื่อรถใกล้เข้าจอด";
             const en = "Hello Khon Kaen City Bus passengers, please note that you are currently at the Bus Stop at Isan Creative Festival stop. You can wait for a bus to the airport or cross the road to the opposite bus stop to go to Bus Terminal 3. The system will notify you again when the bus is approaching.";
             const cn = "孔敬市公交车乘客们，您好！您目前位于“伊桑创意节公交站”。您可以在此等候前往机场的公交车，或者过马路到对面公交站前往3号巴士总站。公交车即将到达时，系统会再次通知您。";
-            const la = "ສະບາຍດີຜູ້ໂດຍສານເມືອງຂອນແກ່ນ ຂໍແຈ້ງໃຫ້ທ່ານຊາບວ່າ ປະຈຸບັນທ່ານຢູ່ທີ່ປ້າຍ “ລົດເມ ຢູ່ເທດສະການອີສານສ້າງສັນ”. ທ່ານສາມາດລໍຖ້າລົດເມໄປສະໜາມບິນ ຫຼື ຂ້າມຖະໜົນໄປຫາປ້າຍລົດເມກົງກັນຂ້າມເພື່ອໄປສະຖານີລົດເມ 3. ລະບົບຈະແຈ້ງເຕືອນທ່ານອີກຄັ້ງເມື່ອລົດເມໃກ້ເຂົ້າມາ.";
+            const la = "สะบายดี ผู้โดยสานเมืองขอนแก่น ขอแจ้งให้ท่านซาบว่า ปะจุบันท่านอยู่ที่ป้าย ลดเม เทดสะกานอีสานส้างสัน. ท่านสามาดลอถ้ารถเมไปสะหนามบิน หรือข้ามถะหนนไปหาป้ายลดเมตงกันข้ามเพื่อไปสะถานีลดเมแห่งที่ 3. ละบ็บจะแจ้งเตือนท่านอีกคั้งเมื่อลดเมใกล้เข้ามา.";
             speakAlertMultiLang(th, en, cn, la, true);
         }
 
@@ -415,7 +415,7 @@
                                 `ผู้โดยสารโปรดทราบ รถเมล์สาย ${routeNum} จะเข้าจอดในอีกประมาณ ${etaMinutes} นาที`, 
                                 `Attention, Route ${routeNum} will arrive in approximately ${etaMinutes} minutes.`, 
                                 `请注意，${routeNum} 号线将在大约 ${etaMinutes} 分钟后到达。`,
-                                `ຜູ້ໂດຍສານໂປດຊາບ, ລົດເມສາຍ ${routeNum} ຈະເຂົ້າຈອດໃນອີກປະມານ ${etaMinutes} ນາທີ.`, 
+                                `ผู้โดยสานโปรดซาบ ลดเมสาย ${routeNum} จะเข้าจอดในอีกปะมาน ${etaMinutes} นาที.`, 
                             false);
                             lastSpokenEta = etaMinutes; isFirstCalculation = false; 
                         }
@@ -452,7 +452,7 @@
                         { text: th, langCode: 'th-TH', pitch: 1.1, rate: 1.0 }, 
                         { text: en, langCode: 'en-US', pitch: 1.0, rate: 0.9 },
                         { text: cn, langCode: 'zh-CN', pitch: 1.0, rate: 0.9 },
-                        { text: la, langCode: 'lo-LA', pitch: 1.0, rate: 0.9 }
+                        { text: la, langCode: 'th-TH', pitch: 1.0, rate: 0.9 }
                     ];
                     
                     const activeUtterances = [];
@@ -465,7 +465,7 @@
                         if (specificVoice) {
                             msg.voice = specificVoice;
                             activeUtterances.push(msg);
-                        } else if (item.langCode !== 'lo-LA') { 
+                        } else { 
                             activeUtterances.push(msg);
                         }
                     });
