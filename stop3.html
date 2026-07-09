@@ -212,7 +212,8 @@
             TH: { stop: "📍 ป้าย: รถเมล์เดิ้ล เทศกาลอีสานสร้างสรรค์", etaLabel: "รถจะถึงในอีก", etaUnit: "นาที", routeLabel: "สายรถ:", carLabel: "เบอร์รถ:", distLabel: "ระยะทาง:", distUnit: "กม.", searching: "กำลังค้นหา...", sleepTitle: "นอกเวลาให้บริการ" },
             EN: { stop: "📍 Stop: Modern Bus Stop, Isaan Creative Festival", etaLabel: "Arriving in", etaUnit: "Mins", routeLabel: "Route:", carLabel: "Bus No:", distLabel: "Distance:", distUnit: "km", searching: "Searching...", sleepTitle: "Out of Service" },
             CN: { stop: "📍 站点: 现代巴士站", etaLabel: "即将到达", etaUnit: "分钟", routeLabel: "路线:", carLabel: "车号:", distLabel: "距离:", distUnit: "公里", searching: "搜索中...", sleepTitle: "非营业时间" },
-        
+            LA: { stop: "📍 ປ້າຍ: ສະຖານີລົດເມທີ່ທັນສະໄຫມ", etaLabel: "ລົດຈະມາຮອດໃນອີກ", etaUnit: "ນາที", routeLabel: "ສາຍລົດ:", carLabel: "ເບີລົດ:", distLabel: "ໄລຍະທາງ:", distUnit: "ກມ.", searching: "ກຳລັງຊອກຫາ...", sleepTitle: "ນອກເວລາໃຫ້ບໍລິການ" }
+        };
 
         const routeDict = {
             "สาย": { EN: "Route ", CN: "路线 ", LA: "ສາຍ " },
@@ -401,7 +402,9 @@
             const en = 'Hello Khon Kaen City Bus passengers, please note that you are currently at the "Bus Stop at Isan Creative Festival" stop. You can wait for a bus to the airport or cross the road to the opposite bus stop to go to Bus Terminal 3. The system will notify you again when the bus is approaching.';
             const cn = "孔敬市公交车乘客们，您好！您目前位于“伊桑创意节公交站”。您可以在此等候前往机场的公交车，或者过马路到对面公交站前往3号巴士总站。公交车即将到达时，系统会再次通知您。";
             
-            speakAlertMultiLang(th, en, cn, true);
+            // ปรับปรุง: เปลี่ยนภาษาลาวเป็นคำอ่านภาษาไทยสะกดคำพากย์ตามเสียงลาว
+            const la = "สะบายดี ผู้โดยสานเมืองขอนแก่น ขอแจ้งให้ท่านซาบว่า ปะจุบันท่านอยู่ที่ป้าย ลดเม เทดสะกานอีสานส้างสัน. ท่านสามาดลอถ้ารถเมไปสะหนามบิน หรือข้ามถะหนนไปหาป้ายลดเมกงกันข้ามเพื่อไปสะถานีลดเมแห่งที่ 3. ละบ็บจะแจ้งเตือนท่านอีกคั้งเมื่อลดเมใกล้เข้ามา.";
+            speakAlertMultiLang(th, en, cn, la, true);
         }
 
         async function fetchAndCheckBus() {
@@ -473,6 +476,7 @@
                                 `ผู้โดยสารโปรดทราบ รถเมล์สาย ${routeNum} จะเข้าจอดในอีกประมาณ ${etaMinutes} นาที`, 
                                 `Attention, Route ${routeNum} will arrive in approximately ${etaMinutes} minutes.`, 
                                 `请注意，${routeNum} 号线将在大约 ${etaMinutes} 分钟后到达。`,
+                                `ผู้โดยสานโปรดซาบ ลดเมสาย ${routeNum} จะเข้าจอดในอีกปะมาน ${etaMinutes} นาที.`, 
                             false);
                             lastSpokenEta = etaMinutes; isFirstCalculation = false; 
                         }
@@ -510,6 +514,7 @@
                         { text: th, langCode: 'th-TH', pitch: 1.1, rate: 1.0 }, 
                         { text: en, langCode: 'en-US', pitch: 1.0, rate: 0.9 },
                         { text: cn, langCode: 'zh-CN', pitch: 1.0, rate: 0.9 },
+                        { text: la, langCode: 'th-TH', pitch: 0.9, rate: 0.9 }
                     ];
                     
                     const activeUtterances = [];
