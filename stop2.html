@@ -34,7 +34,6 @@
         header { text-align: center; margin-bottom: 2vh; flex-shrink: 0; }
         .logo { width: auto; max-width: 60%; height: 8vh; margin: 0 auto 1.5vh auto; display: block; object-fit: contain; }
         
-        /* ปรับปรุงป้ายชื่อสถานีให้เป็น สีดำบนพื้นเหลือง (สไตล์ป้ายจราจร สู้แดดดีที่สุด) และขยายขนาด */
         .stop-status { 
             font-size: clamp(20px, 3vh, 36px); 
             color: #000000; 
@@ -55,7 +54,6 @@
         
         .eta-container { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; min-height: 0; }
         
-        /* เปลี่ยนคำว่า "รถจะถึงในอีก" เป็นสีขาวบริสุทธิ์ ตัวหนา และขยายใหญ่ */
         .eta-label { 
             color: #FFFFFF; 
             font-size: clamp(24px, 4vh, 45px); 
@@ -65,7 +63,6 @@
             font-weight: 700;
         }
         
-        /* ขยายตัวเลขนาทีให้ใหญ่ยักษ์เต็มตา พร้อมปรับเรืองแสงสีเขียวสว่างวาบ */
         .eta-value { 
             font-size: clamp(120px, 30vh, 450px); 
             font-weight: 700; 
@@ -75,7 +72,6 @@
             margin: 0; 
         }
         
-        /* คำว่า "นาที" เปลี่ยนเป็นสีเหลืองทองเพื่อความเปรียบต่างสูง และขยายขนาด */
         .eta-unit { 
             color: #FFD700; 
             font-size: clamp(32px, 5vh, 60px); 
@@ -91,7 +87,6 @@
         .info-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2a2a2a; padding-bottom: 1.5vh; }
         .info-row:last-child { border-bottom: none; padding-bottom: 0; }
         
-        /* เปลี่ยนหัวข้อข้อมูลรถเป็นสีเหลืองสว่าง และขยายขนาด */
         .info-label { 
             color: #FFD700; 
             font-size: clamp(22px, 3.5vh, 40px); 
@@ -101,7 +96,6 @@
             margin-right: 20px;
         }
         
-        /* ขยายค่าข้อมูลตัวเลข/ชื่อสถานีในตารางรถให้ใหญ่ชัดเจน */
         .info-value { 
             color: #FFFFFF; 
             font-size: clamp(24px, 4vh, 45px); 
@@ -111,7 +105,6 @@
         
         .marquee-container { max-width: 65%; overflow: hidden; white-space: nowrap; }
         
-        /* ตัววิ่งสายรถเปลี่ยนเป็น Pure Green เรืองแสงสีเขียวเข้มเพื่อให้อ่านง่ายท่ามกลางแดด */
         .marquee-content { 
             display: inline-block; 
             color: #00FF00; 
@@ -145,7 +138,6 @@
             <button class="lang-btn active" onclick="setUILanguage('TH')">TH</button>
             <button class="lang-btn" onclick="setUILanguage('EN')">EN</button>
             <button class="lang-btn" onclick="setUILanguage('CN')">中文</button>
-            <button class="lang-btn" onclick="setUILanguage('LA')">ລາວ</button>
         </div>
 
         <div id="view-sleep">
@@ -211,18 +203,17 @@
         const uiText = {
             TH: { stop: "📍 ป้าย: รถเมล์เดิ้ล เทศกาลอีสานสร้างสรรค์", etaLabel: "รถจะถึงในอีก", etaUnit: "นาที", routeLabel: "สายรถ:", carLabel: "เบอร์รถ:", distLabel: "ระยะทาง:", distUnit: "กม.", searching: "กำลังค้นหา...", sleepTitle: "นอกเวลาให้บริการ" },
             EN: { stop: "📍 Stop: Modern Bus Stop, Isaan Creative Festival", etaLabel: "Arriving in", etaUnit: "Mins", routeLabel: "Route:", carLabel: "Bus No:", distLabel: "Distance:", distUnit: "km", searching: "Searching...", sleepTitle: "Out of Service" },
-            CN: { stop: "📍 站点: 现代巴士站", etaLabel: "即将到达", etaUnit: "分钟", routeLabel: "路线:", carLabel: "车号:", distLabel: "距离:", distUnit: "公里", searching: "搜索中...", sleepTitle: "非营业时间" },
-            LA: { stop: "📍 ປ້າຍ: ສະຖານີລົດເມທີ່ທັນສະໄຫມ", etaLabel: "ລົດຈະມາຮອດໃນອີກ", etaUnit: "ນາที", routeLabel: "ສາຍລົດ:", carLabel: "ເບີລົດ:", distLabel: "ໄລຍະທາງ:", distUnit: "ກມ.", searching: "ກຳລັງຊອກຫາ...", sleepTitle: "ນອກເວລາໃຫ້ບໍລິການ" }
+            CN: { stop: "📍 站点: 现代巴士站", etaLabel: "即将到达", etaUnit: "分钟", routeLabel: "路线:", carLabel: "车号:", distLabel: "距离:", distUnit: "公里", searching: "搜索中...", sleepTitle: "非营业时间" }
         };
 
         const routeDict = {
-            "สาย": { EN: "Route ", CN: "路线 ", LA: "ສາຍ " },
-            "สนามบิน": { EN: "Airport", CN: "机场", LA: "สะสนามบิน" },
-            "บขส.3": { EN: "Terminal 3", CN: "3号客运站", LA: "บขส.3" },
-            "บขส.": { EN: "Bus Terminal ", CN: "客运站 ", LA: "บขส." },
-            "มข.": { EN: "KKU", CN: "孔敬大学", LA: "ม.ขอนแก่น" },
-            "มหาวิทยาลัยขอนแก่น": { EN: "Khon Kaen Univ.", CN: "孔敬大学", LA: "มหาวิทยาลัยขอนแก่น" },
-            "เซ็นทรัล": { EN: "Central", CN: "中央广场", LA: "เซ็นโทร" }
+            "สาย": { EN: "Route ", CN: "路线 " },
+            "สนามบิน": { EN: "Airport", CN: "机场" },
+            "บขส.3": { EN: "Terminal 3", CN: "3号客运站" },
+            "บขส.": { EN: "Bus Terminal ", CN: "客运站 " },
+            "มข.": { EN: "KKU", CN: "孔敬大学" },
+            "มหาวิทยาลัยขอนแก่น": { EN: "Khon Kaen Univ.", CN: "孔敬大学" },
+            "เซ็นทรัล": { EN: "Central", CN: "中央广场" }
         };
 
         window.addEventListener('load', () => { 
@@ -336,7 +327,7 @@
             currentLang = lang;
             document.querySelectorAll('.lang-btn').forEach(btn => {
                 btn.classList.remove('active');
-                if (btn.innerText === lang || (lang === 'CN' && btn.innerText === '中文') || (lang === 'LA' && btn.innerText === 'ລາວ')) {
+                if (btn.innerText === lang || (lang === 'CN' && btn.innerText === '中文')) {
                     btn.classList.add('active');
                 }
             });
@@ -397,14 +388,10 @@
         function announceWelcome() {
             if (isSleepMode()) return; 
             const th = "สวัสดีขอนแก่น ผู้โดยสารขอนแก่นซิตี้บัส โปรดทราบ ขณะนี้ท่านอยู่ที่ป้าย รถเมล์เดิ้ล เทศกาลอีสานสร้างสรรค์ ท่านสามารถรอรถเพื่อเดินทางไปยังสนามบิน หรือข้ามถนนไปยังป้ายรถเมล์ฝั่งตรงข้าม เพื่อเดินทางไป สถานีขนส่งแห่งที่ 3 ระบบจะทำการแจ้งเตือนให้ทราบอีกครั้ง เมื่อรถใกล้เข้าจอด";
-            
-            // ปรับปรุง: ใช้ single quotes ครอบสายอักษรภาษาอังกฤษ เพื่อแก้ปัญหา Syntax Error บล็อกระบบ
             const en = 'Hello Khon Kaen City Bus passengers, please note that you are currently at the "Bus Stop at Isan Creative Festival" stop. You can wait for a bus to the airport or cross the road to the opposite bus stop to go to Bus Terminal 3. The system will notify you again when the bus is approaching.';
             const cn = "孔敬市公交车乘客们，您好！您目前位于“伊桑创意节公交站”。您可以在此等候前往机场的公交车，或者过马路到对面公交站前往3号巴士总站。公交车即将到达时，系统会再次通知您。";
             
-            // ปรับปรุง: เปลี่ยนภาษาลาวเป็นคำอ่านภาษาไทยสะกดคำพากย์ตามเสียงลาว
-            const la = "สะบายดี ผู้โดยสานเมืองขอนแก่น ขอแจ้งให้ท่านซาบว่า ปะจุบันท่านอยู่ที่ป้าย ลดเม เทดสะกานอีสานส้างสัน. ท่านสามาดลอถ้ารถเมไปสะหนามบิน หรือข้ามถะหนนไปหาป้ายลดเมกงกันข้ามเพื่อไปสะถานีลดเมแห่งที่ 3. ละบ็บจะแจ้งเตือนท่านอีกคั้งเมื่อลดเมใกล้เข้ามา.";
-            speakAlertMultiLang(th, en, cn, la, true);
+            speakAlertMultiLang(th, en, cn, true);
         }
 
         async function fetchAndCheckBus() {
@@ -471,12 +458,10 @@
                             const routeNumMatch = currentRawRouteName.match(/\d+/);
                             const routeNum = routeNumMatch ? routeNumMatch[0] : "";
                             
-                            // ปรับปรุง: แจ้งเตือนภาษาลาวด้วยคำอ่านภาษาไทยสะกดตามสำเนียง
                             speakAlertMultiLang(
                                 `ผู้โดยสารโปรดทราบ รถเมล์สาย ${routeNum} จะเข้าจอดในอีกประมาณ ${etaMinutes} นาที`, 
                                 `Attention, Route ${routeNum} will arrive in approximately ${etaMinutes} minutes.`, 
                                 `请注意，${routeNum} 号线将在大约 ${etaMinutes} 分钟后到达。`,
-                                `ผู้โดยสานโปรดซาบ ลดเมสาย ${routeNum} จะเข้าจอดในอีกปะมาน ${etaMinutes} นาที.`, 
                             false);
                             lastSpokenEta = etaMinutes; isFirstCalculation = false; 
                         }
@@ -499,7 +484,7 @@
             } catch (err) { log("Error: " + err.message); }
         }
 
-        function speakAlertMultiLang(th, en, cn, la, isWelcome) {
+        function speakAlertMultiLang(th, en, cn, isWelcome) {
             if ('speechSynthesis' in window) {
                 if (!isWelcome) window.speechSynthesis.cancel(); 
                 
@@ -509,12 +494,10 @@
                 playChime();
                 
                 setTimeout(() => {
-                    // ปรับปรุง: สั่งรหัสภาษาลาว (la) ให้ทำงานบนเสียง th-TH และปรับลดความสูงของเสียงลงเล็กน้อย (pitch: 0.9)
                     const utterancesData = [
                         { text: th, langCode: 'th-TH', pitch: 1.1, rate: 1.0 }, 
                         { text: en, langCode: 'en-US', pitch: 1.0, rate: 0.9 },
-                        { text: cn, langCode: 'zh-CN', pitch: 1.0, rate: 0.9 },
-                        { text: la, langCode: 'th-TH', pitch: 0.9, rate: 0.9 }
+                        { text: cn, langCode: 'zh-CN', pitch: 1.0, rate: 0.9 }
                     ];
                     
                     const activeUtterances = [];
@@ -528,7 +511,6 @@
                             msg.voice = specificVoice;
                             activeUtterances.push(msg);
                         } else { 
-                            // ปรับปรุง: ลบส่วนการดักคัดกรอง th-TH ออกเพื่อให้ประโยคลาวที่ถูกจำลองเข้าทำงานได้สมบูรณ์
                             activeUtterances.push(msg);
                         }
                     });
