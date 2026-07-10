@@ -131,7 +131,7 @@
         <header>
             <img src="bussing.png" alt="BUSSING TRANSIT" class="logo" onerror="this.style.display='none'; document.getElementById('alt-logo').style.display='block';">
             <h1 id="alt-logo" style="display:none; font-size: 4vh; color: #ff007f; margin-bottom: 1vh;">BUSSING<span style="color:#00e676">TRANSIT</span></h1>
-            <div class="stop-status" id="ui-stop-name">📍 ป้าย: รถเมล์เดิ้น เทศกาลอีสานสร้างสรรค์ </br>พิพิธภัณฑ์ธนารักษ์ จังหวัดขอนแก่น</div>
+            <div class="stop-status" id="ui-stop-name">📍 ป้าย: รถเมล์เดิ้น </br>เทศกาลอีสานสร้างสรรค์ </br>พิพิธภัณฑ์ธนารักษ์ จังหวัดขอนแก่น</div>
         </header>
 
         <div class="lang-switcher" id="lang-menu">
@@ -387,9 +387,9 @@
 
         function announceWelcome() {
             if (isSleepMode()) return; 
-            const th = "สวัสดีขอนแก่น ผู้โดยสารขอนแก่นซิตี้บัส โปรดทราบ ขณะนี้ท่านอยู่ที่ป้าย รถเมล์เดิ้ล เทศกาลอีสานสร้างสรรค์ ท่านสามารถรอรถเพื่อเดินทางไปยังสนามบิน หรือข้ามถนนไปยังป้ายรถเมล์ฝั่งตรงข้าม เพื่อเดินทางไป สถานีขนส่งแห่งที่ 3 ระบบจะทำการแจ้งเตือนให้ทราบอีกครั้ง เมื่อรถใกล้เข้าจอด";
-            const en = 'Hello Khon Kaen City Bus passengers, please note that you are currently at the "Bus Stop at Isan Creative Festival" stop. You can wait for a bus to the airport or cross the road to the opposite bus stop to go to Bus Terminal 3. The system will notify you again when the bus is approaching.';
-            const cn = "孔敬市公交车乘客们，您好！您目前位于“伊桑创意节公交站”。您可以在此等候前往机场的公交车，或者过马路到对面公交站前往3号巴士总站。公交车即将到达时，系统会再次通知您。";
+            const th = "สวัสดีขอนแก่น ผู้โดยสารขอนแก่นซิตี้บัส โปรดทราบ ขณะนี้ท่านอยู่ที่ป้ายรถเมล์เดิ้ล ท่านสามารถรอรถเพื่อเดินทางไปยังจุดแสดงนิทรรศการ ในเทศกาลอีสานสร้างสรรค์ได้ฟรี หรือข้ามถนนไปยังป้ายรถเมล์ฝั่งตรงข้าม เพื่อเดินทางไป สถานีขนส่งแห่งที่ 3 ระบบจะทำการแจ้งเตือนให้ทราบอีกครั้ง เมื่อรถใกล้เข้าจอด";
+            const en = 'Hello Khon Kaen, Khon Kaen City Bus passengers. Please note that you are currently at the Doel bus stop. You can wait for the bus to travel to the exhibition venue at the Isan Creative Festival for free, or cross the road to the opposite bus stop to travel to Bus Terminal 3. The system will notify you again when the bus is approaching.';
+            const cn = "孔敬的各位乘客，您好！您目前位于Doel公交站。您可以免费在此等候前往伊桑创意节展览场地的公交车，或者过马路到对面的公交站前往3号公交总站。公交车即将到达时，系统会再次通知您。";
             
             speakAlertMultiLang(th, en, cn, true);
         }
